@@ -1,0 +1,2287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tinta Láser · Gestión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/driver.js/1.3.1/driver.min.css">
+<style>
+/* Tipografía del sistema de diseño: Inter (OFL) con respaldo nativo */
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif}
+</style>
+<style>
+:root{
+  --ink:#1c2523; --ink2:#2a3532; --pine:#2f6b5a; --pine2:#3f8570;
+  --ember:#e5672f; --bg:#f4f0e8; --card:#ffffff; --line:#e6dfd3; --muted:#6d6860;
+  --ok:#2f8f5b; --warn:#c9781c; --bad:#b33b3b; --r:16px;
+  --shadow:0 1px 2px rgba(20,20,10,.04),0 8px 24px rgba(20,20,10,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:Georgia,"Iowan Old Style",serif;font-weight:400;margin:0}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--ember);outline-offset:2px;border-radius:8px}
+
+.top{background:var(--ink);color:#fff;padding:18px 20px 16px;position:relative;overflow:hidden}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--ember),rgba(229,103,47,0));transform:scaleX(0);transform-origin:left;animation:beam 1.1s .15s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes beam{to{transform:scaleX(1)}}
+.top h1{font-size:22px;letter-spacing:.2px}
+.top p{margin:2px 0 0;color:#a9b8b2;font-size:13px}
+
+.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:20}
+.tabs button{flex:1;border:0;background:none;padding:6px 2px;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;border-radius:12px;transition:color .2s, background .2s}
+.tabs button .ic{display:block;font-size:19px;line-height:1.2;margin-bottom:1px;transition:transform .25s}
+.tabs button.on{color:var(--pine);background:#e7f1ec}
+.tabs button.on .ic{transform:translateY(-2px) scale(1.08)}
+main{max-width:720px;margin:0 auto;padding:18px 16px 110px}
+section{display:none}
+section.on{display:block;animation:rise .35s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h2{font-size:19px;margin-bottom:6px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 12px}
+.hero{background:linear-gradient(135deg,var(--ink) 0%,var(--ink2) 100%);color:#fff;border:0}
+.hero .sub{color:#b8c6c0}
+.big{font-family:Georgia,serif;font-size:34px;color:#ffb48c;line-height:1.1;margin:6px 0 2px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#e7f1ec;color:var(--pine);white-space:nowrap}
+.pill.warn{background:#fdf0dc;color:#8a5000}
+.pill.bad{background:#f8e1e1;color:var(--bad)}
+.pill.dark{background:rgba(255,255,255,.14);color:#fff}
+
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.quick button{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 6px;cursor:pointer;box-shadow:var(--shadow);transition:transform .2s, border-color .2s}
+.quick button:hover{transform:translateY(-2px);border-color:var(--pine2)}
+.quick button:active{transform:scale(.97)}
+.quick .ic{font-size:22px;display:block}
+.quick span{font-size:13px;font-weight:600}
+
+.step{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.step:last-child{border-bottom:0}
+.dot{flex:0 0 26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;color:#fff;transition:all .3s}
+.step.done .dot{background:var(--ok);border-color:var(--ok)}
+.step.done .t{color:var(--muted);text-decoration:line-through}
+.step .t{font-weight:600}
+.step .d{font-size:13px;color:var(--muted)}
+
+label{display:block;font-size:14px;font-weight:600;margin:14px 0 6px}
+.help{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:3px}
+input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:#fff;transition:border-color .2s, box-shadow .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pine2);box-shadow:0 0 0 4px rgba(63,133,112,.15)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:520px){.g2,.g3{grid-template-columns:1fr}.quick{grid-template-columns:repeat(3,1fr)}}
+.opts{display:grid;gap:10px;margin-top:8px}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1.5px solid var(--line);border-radius:14px;background:#fff;cursor:pointer;transition:border-color .2s, background .2s, transform .15s}
+.opt:hover{border-color:var(--pine2)}
+.opt:active{transform:scale(.99)}
+.opt input{width:auto;margin-top:4px;accent-color:var(--pine)}
+.opt.sel{border-color:var(--pine);background:#f1f8f4}
+.opt b{display:block}
+.opt small{color:var(--muted)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.seg button{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:12px;cursor:pointer;font-weight:600;transition:all .2s}
+.seg button.on{border-color:var(--pine);background:#f1f8f4;color:var(--pine)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--pine);color:#fff;border:0;border-radius:12px;padding:13px 20px;font-weight:700;cursor:pointer;margin-top:14px;box-shadow:0 4px 14px rgba(47,107,90,.25);transition:transform .15s, filter .2s}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btn.ember{background:var(--ember);box-shadow:0 4px 14px rgba(229,103,47,.3)}
+.btn.small{padding:7px 12px;font-size:13px;margin:0;box-shadow:none}
+.btn.danger{background:none;color:var(--bad);border:1px solid #efcaca;box-shadow:none;padding:6px 10px;font-size:13px;margin:0}
+.actions{display:flex;justify-content:space-between;gap:10px;margin-top:6px;flex-wrap:wrap}
+
+.row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}
+.row:last-child{border-bottom:0}
+.row .m{font-size:13px;color:var(--muted)}
+.amt{font-weight:700;white-space:nowrap}
+.mod{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;margin:8px 0;background:#fff;cursor:pointer;transition:background .2s}
+.mod:hover{background:#fbf9f4}
+.mod input{width:auto;accent-color:var(--pine)}
+.mod .p{margin-left:auto;color:var(--muted);font-size:14px;white-space:nowrap}
+.result{background:var(--ink);color:#fff;border-radius:var(--r);padding:18px;margin-top:14px}
+.result .big{color:#ffb48c}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.split div{background:rgba(255,255,255,.08);border-radius:12px;padding:10px 12px;font-size:13px;color:#c9d6d0}
+.split b{display:block;color:#fff;font-size:17px}
+.light{background:#f4f0e8;color:var(--muted)}
+.light b{color:var(--ink)}
+.empty{color:var(--muted);text-align:center;padding:18px 6px;font-size:14px}
+.group{font-size:12px;font-weight:700;letter-spacing:.4px;color:var(--pine);margin:16px 0 4px;text-transform:uppercase}
+.bar{height:8px;background:var(--line);border-radius:999px;overflow:hidden;margin:10px 0 4px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pine),var(--ember));width:0;transition:width .6s cubic-bezier(.2,.7,.2,1)}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.menu button{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 10px;cursor:pointer;text-align:left;box-shadow:var(--shadow);transition:transform .2s, border-color .2s}
+.menu button:hover{transform:translateY(-2px);border-color:var(--pine2)}
+.menu .ic{font-size:24px;display:block;margin-bottom:6px}
+.menu b{display:block;font-size:15px}
+.menu small{color:var(--muted);font-size:12px}
+
+.wizard{position:fixed;inset:0;background:var(--bg);z-index:50;overflow:auto;display:none}
+.wizard.on{display:block;animation:fadeIn .3s ease both}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.wiz-in{max-width:560px;margin:0 auto;padding:28px 18px 40px;min-height:100vh;display:flex;flex-direction:column}
+.wbar{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 22px}
+.wbar i{display:block;height:100%;background:linear-gradient(90deg,var(--pine),var(--ember));width:0;transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.wiz-step{animation:rise .4s cubic-bezier(.2,.7,.2,1) both}
+.wiz-step h2{font-size:24px;margin-bottom:8px}
+.wiz-foot{margin-top:auto;padding-top:20px;display:flex;justify-content:space-between;gap:10px}
+
+.toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.2,.7,.2,1);z-index:60;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.msg{font-size:14px;color:var(--bad);margin-top:8px;min-height:1em}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+/* Modo prueba */
+.modebar{display:none;position:sticky;top:0;z-index:30;background:var(--ember);color:#fff;padding:9px 14px;font-size:13px;font-weight:600;align-items:center;justify-content:space-between;gap:10px}
+body.prueba .modebar{display:flex}
+body.prueba .top{background:#5b4236}
+.modebar button{background:#fff;color:var(--ember);border:0;border-radius:9px;padding:6px 10px;font-weight:700;cursor:pointer;white-space:nowrap}
+
+/* Accesibilidad: letra grande */
+body.bigtext{font-size:19px}
+body.bigtext .sub,body.bigtext .help,body.bigtext .m{font-size:15px}
+body.bigtext .btn{padding:15px 22px;font-size:17px}
+body.bigtext .tabs button{font-size:13px}
+
+/* Guías */
+details.tram summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:16px}
+details.tram summary::-webkit-details-marker{display:none}
+details.tram summary::after{content:"＋";margin-left:auto;color:var(--pine);font-weight:700;transition:transform .2s}
+details.tram[open] summary::after{content:"−"}
+details.tram[open]{box-shadow:0 8px 24px rgba(20,20,10,.08)}
+.steps{padding-left:20px;margin:6px 0 12px}
+.steps li{margin:6px 0}
+.note-learn{background:#eef6f2;border-left:3px solid var(--pine);padding:10px 12px;border-radius:8px;font-size:14px;margin:10px 0}
+.warn-box{background:#fff3e8;border-left:3px solid var(--ember);padding:10px 12px;border-radius:8px;font-size:14px;margin:10px 0}
+.warn-box ul{margin:6px 0 0;padding-left:18px}
+.practice-tag{display:inline-block;background:var(--ember);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;letter-spacing:.3px}
+.check-li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.check-li input{width:auto;margin-top:4px;accent-color:var(--pine)}
+.ok{color:var(--ok);font-weight:700}
+.no{color:var(--bad);font-weight:700}
+a.btn{text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="modebar" id="modebar">
+  <span>MODO PRUEBA · Datos de práctica. Nada se envía al SII.</span>
+  <button onclick="toggleMode()">Salir</button>
+</div>
+
+<!-- ASISTENTE DE INICIO -->
+<div class="wizard" id="wizard" role="dialog" aria-modal="true" aria-label="Asistente de inicio">
+  <div class="wiz-in">
+    <div class="wbar"><i id="wbarFill"></i></div>
+    <div id="wizBody"></div>
+    <div class="wiz-foot">
+      <button class="btn ghost" id="wizBack">Atrás</button>
+      <button class="btn" id="wizNext">Siguiente</button>
+    </div>
+  </div>
+</div>
+
+<header class="top">
+  <h1>Tinta Láser</h1>
+  <p id="topSub">Tu negocio, al día</p>
+</header>
+
+<main>
+
+<!-- HOY -->
+<section id="hoy" class="on">
+  <div class="card hero">
+    <span class="pill dark" id="f29Pill">F29</span>
+    <div class="sub" style="margin-top:10px">Próximo vencimiento de IVA</div>
+    <div class="big" id="f29Big">—</div>
+    <div class="sub" id="f29Sub"></div>
+  </div>
+
+  <div class="quick">
+    <button onclick="go('cotizar')"><span class="ic">🧾</span><span>Cotizar</span></button>
+    <button onclick="newPedido()"><span class="ic">📝</span><span>Nuevo pedido</span></button>
+    <button onclick="go('mov');setKind('venta')"><span class="ic">💰</span><span>Registrar venta</span></button>
+  </div>
+
+  <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div><b>¿Primera vez aquí?</b><div class="m" style="font-size:13px;color:var(--muted)">Un recorrido de 1 minuto te muestra cada parte de la app.</div></div>
+    <button class="btn small" onclick="startTour()">Ver recorrido</button>
+  </div>
+  <div class="card">
+    <h2>Tu lista de inicio</h2>
+    <p class="sub">Marca cada paso cuando lo completes. La app te avisa lo que falta.</p>
+    <div id="checklist"></div>
+  </div>
+
+  <div class="card">
+    <h2>Avisos</h2>
+    <div id="alerts"></div>
+  </div>
+</section>
+
+<!-- COTIZAR -->
+<section id="cotizar">
+  <div class="card">
+    <h2>Cotizar un pedido</h2>
+    <p class="sub">Elige el producto y la cantidad. La app calcula el precio por ti.</p>
+    <label>Producto</label>
+    <select id="qProd" onchange="renderMods();calc()"></select>
+    <label>Teléfono del cliente <span class="help">Opcional. Con código de país, ej: 56912345678</span></label>
+    <input id="qPhone" inputmode="tel" placeholder="56912345678">
+    <div class="g2">
+      <div><label>Cantidad</label><input id="qQty" type="number" min="1" value="1" inputmode="numeric" oninput="calc()"></div>
+      <div><label>Fecha</label><input id="qDate" type="date"></div>
+    </div>
+    <label>Adicionales <span class="help">Marca solo los que pida el cliente.</span></label>
+    <div id="qMods"></div>
+    <div class="result" id="qResult">
+      <div style="color:#c9d6d0;font-size:14px">Total con IVA</div>
+      <div class="big" id="qTotal">$0</div>
+      <div style="color:#c9d6d0;font-size:14px" id="qDetail"></div>
+      <div class="split">
+        <div>Neto<b id="qNeto">$0</b></div>
+        <div>IVA 19%<b id="qIva">$0</b></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="copyQuote()">Copiar cotización</button>
+      <button class="btn" style="background:#25d366;box-shadow:0 4px 14px rgba(37,211,102,.3)" onclick="sendWA()">Enviar por WhatsApp</button>
+      <button class="btn" onclick="quoteToPedido()">Convertir en pedido</button>
+    </div>
+  </div>
+</section>
+
+<!-- PEDIDOS -->
+<section id="pedidos">
+  <div class="card">
+    <h2>Pedidos</h2>
+    <p class="sub">Cada pedido avanza por etapas. Cuando lo marques como entregado, la app anota la venta por ti.</p>
+    <div class="actions"><button class="btn" onclick="newPedido()">Nuevo pedido</button></div>
+  </div>
+  <div id="pedList"></div>
+</section>
+
+<!-- PRECIOS -->
+<section id="precios">
+  <div class="card">
+    <h2>Mis productos y precios</h2>
+    <p class="sub">Los precios se ingresan con IVA incluido. Puedes cargarlos de a poco.</p>
+    <div id="catList"></div>
+  </div>
+  <div class="card">
+    <h2>Agregar producto</h2>
+    <label>Nombre del producto</label>
+    <input id="pName" placeholder="Ej: Bandeja madera 20x30 cm">
+    <label>Precio según cantidad <span class="help">Según cuántas unidades compra el cliente.</span></label>
+    <div class="g3">
+      <div><span class="help" style="margin:0 0 4px">1 a 10</span><input id="pT1" type="number" min="0" inputmode="numeric"></div>
+      <div><span class="help" style="margin:0 0 4px">11 a 39</span><input id="pT2" type="number" min="0" inputmode="numeric"></div>
+      <div><span class="help" style="margin:0 0 4px">40 o más</span><input id="pT3" type="number" min="0" inputmode="numeric"></div>
+    </div>
+    <label>Adicionales <span class="help">Opcional. Ej: Frase calada, Color personalizado.</span></label>
+    <div id="pModsAdd"></div>
+    <div class="actions"><button class="btn small ghost" onclick="addModRow()">+ Agregar adicional</button></div>
+    <div class="actions"><button class="btn" onclick="addProduct()">Guardar producto</button></div>
+    <div class="msg" id="pMsg"></div>
+  </div>
+</section>
+
+<!-- MOVIMIENTOS -->
+<section id="mov">
+  <div class="card">
+    <h2>Registrar movimiento</h2>
+    <p class="sub">Anota ventas y compras con su documento. La app calcula el IVA.</p>
+    <div class="seg">
+      <button id="kVenta" onclick="setKind('venta')">Venta</button>
+      <button id="kCompra" onclick="setKind('compra')">Compra</button>
+    </div>
+    <div class="g2">
+      <div><label>Documento</label>
+        <select id="mDoc"><option>Boleta</option><option>Factura</option><option>Otro</option></select></div>
+      <div><label>Número <span class="help">Como aparece en el documento.</span></label><input id="mNum" inputmode="numeric"></div>
+    </div>
+    <div class="g2">
+      <div><label>Fecha</label><input id="mDate" type="date"></div>
+      <div><label>Monto total con IVA</label><input id="mAmt" type="number" min="0" inputmode="numeric" placeholder="$"></div>
+    </div>
+    <label>Descripción <span class="help">Ej: MDF 3 mm, cliente, llaveros.</span></label>
+    <input id="mDesc">
+    <div id="compraExtra" style="display:none">
+      <label>¿Es material de tu inventario? <span class="help">Si lo es, sumamos el stock por ti.</span></label>
+      <div class="g2">
+        <div><select id="mItemSel"><option value="">No</option></select></div>
+        <div><input id="mItemQty" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Cantidad"></div>
+      </div>
+    </div>
+    <div class="actions"><button class="btn" onclick="addMov()">Guardar movimiento</button></div>
+    <div class="msg" id="mMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>IVA de este mes</h2>
+    <div class="split">
+      <div class="light"><span>IVA por ventas</span><b id="ivaDeb">$0</b></div>
+      <div class="light"><span>IVA por compras</span><b id="ivaCre">$0</b></div>
+    </div>
+    <p class="sub" id="f29Est" style="margin-top:12px"></p>
+    <p class="help">Es una estimación. Tu contador confirma el F29 final.</p>
+    <div class="actions"><button class="btn ghost" onclick="exportCSV()">Descargar resumen del mes para mi contador</button></div>
+  </div>
+
+  <div class="card">
+    <h2>IVA de los últimos 6 meses</h2>
+    <p class="sub">Compara lo que cobraste con lo que pagaste. Te ayuda a ver tendencias.</p>
+    <canvas id="ivaChart" height="200" role="img" aria-label="Gráfico de barras del IVA de ventas y compras de los últimos seis meses"></canvas>
+    <p class="help" id="ivaChartFallback"></p>
+  </div>
+  <div class="card">
+    <h2>Revisar cartola del banco</h2>
+    <p class="sub">Sube el archivo CSV de tu cartola. La app compara cada movimiento con lo que tienes anotado y te muestra lo que falta.</p>
+    <input type="file" accept=".csv,text/csv" onchange="importCartola(this.files[0])">
+    <p class="help">Todo se revisa aquí en tu equipo. No se envía a ningún lado.</p>
+    <div id="bankOut" style="margin-top:12px"></div>
+  </div>
+  <div class="card">
+    <h2>Libro diario del mes</h2>
+    <p class="sub">Cada venta y compra se convierte en asientos de partida doble. La app revisa que Debe y Haber cuadren.</p>
+    <div id="libroDiario"></div>
+  </div>
+  <div class="card">
+    <h2>Últimos movimientos</h2>
+    <div id="movList"></div>
+  </div>
+</section>
+
+<!-- MÁS -->
+<section id="mas">
+  <div class="card">
+    <h2>Más herramientas</h2>
+    <p class="sub">Todo lo que necesitas para tu negocio, en un lugar.</p>
+    <div class="menu">
+      <button onclick="go('f29')"><span class="ic">🧮</span><b>Declarar F29</b><small>Asistente paso a paso</small></button>
+      <button onclick="go('clientes')"><span class="ic">👥</span><b>Clientes</b><small>Contactos y mensajes</small></button>
+      <button onclick="go('proveedores')"><span class="ic">🏪</span><b>Proveedores</b><small>Dónde comprar y a qué precio</small></button>
+      <button onclick="go('competencia')"><span class="ic">🔎</span><b>Competencia</b><small>Precios del mercado</small></button>
+      <button onclick="go('rentabilidad')"><span class="ic">📊</span><b>Rentabilidad</b><small>Costos y punto de equilibrio</small></button>
+      <button onclick="go('campanas')"><span class="ic">📣</span><b>Campañas</b><small>Contenido para redes</small></button>
+      <button onclick="go('documentos')"><span class="ic">🗂️</span><b>Documentos</b><small>PDF y planillas</small></button>
+      <button onclick="go('tramites')"><span class="ic">📚</span><b>Trámites</b><small>Guías paso a paso y práctica</small></button>
+      <button onclick="go('inventario')"><span class="ic">🪵</span><b>Inventario</b><small>Planchas, insumos y mermas</small></button>
+      <button onclick="go('sercotec')"><span class="ic">📑</span><b>Sercotec</b><small>Gastos y rendición</small></button>
+      <button onclick="go('fechas')"><span class="ic">📅</span><b>Fechas</b><small>F29, patente y renta</small></button>
+      <button onclick="go('ajustes')"><span class="ic">⚙️</span><b>Ajustes</b><small>Datos y respaldo</small></button>
+    </div>
+  </div>
+</section>
+
+<!-- F29 -->
+<section id="f29">
+  <div class="card">
+    <h2>Declarar mi F29</h2>
+    <p class="sub">Te guío paso a paso. La app calcula los números y tú los copias en el SII. Así no te equivocas.</p>
+    <div class="bar"><i id="f29Bar"></i></div>
+    <p class="help" id="f29Label"></p>
+  </div>
+  <div id="f29Box"></div>
+</section>
+
+<!-- TRÁMITES -->
+<section id="tramites">
+  <div class="card">
+    <h2>Trámites y guías</h2>
+    <p class="sub">Aprende cada obligación paso a paso. Usa <b>Practicar</b> para ensayar sin riesgo: en modo prueba nada se envía a ningún lado.</p>
+  </div>
+  <div id="tramList"></div>
+</section>
+
+<!-- PRÁCTICA -->
+<section id="practica">
+  <div class="card">
+    <h2>Práctica <span class="practice-tag">PRUEBA</span></h2>
+    <p class="sub">Tus números aquí son de práctica. Cuando te sientas seguro, haz el trámite real en el sitio oficial.</p>
+  </div>
+  <div id="practBox"></div>
+</section>
+
+<!-- CLIENTES -->
+<section id="clientes"><div id="crud-clientes"></div></section>
+
+<!-- PROVEEDORES -->
+<section id="proveedores"><div id="crud-proveedores"></div><div id="crud-ofertas"></div></section>
+
+<!-- COMPETENCIA -->
+<section id="competencia"><div id="mercadoResumen"></div><div id="crud-competencia"></div></section>
+
+<!-- RENTABILIDAD -->
+<section id="rentabilidad"><div id="rentBox"></div></section>
+
+<!-- CAMPAÑAS -->
+<section id="campanas"><div id="campBox"></div></section>
+
+<!-- DOCUMENTOS -->
+<section id="documentos">
+  <div class="card">
+    <h2>Documentos y papeles</h2>
+    <p class="sub">Genera PDF y planillas internas para ti, tu contador y tu rendición. Nada se envía a ningún lado.</p>
+    <div class="note-learn"><b>Importante:</b> boletas, facturas y notas de crédito solo se emiten en el SII o en un sistema certificado. Estos documentos son de control interno.</div>
+  </div>
+  <div class="card">
+    <h2>Cotización (PDF)</h2>
+    <p class="sub">La última cotización que hiciste en la pestaña Cotizar, lista para enviar.</p>
+    <div class="actions"><button class="btn" onclick="pdfCotizacion()">Descargar cotización</button></div>
+  </div>
+  <div class="card">
+    <h2>Resumen del F29 para tu contador (PDF)</h2>
+    <p class="sub">Los números del asistente F29, con sus códigos, para revisarlos juntos.</p>
+    <div class="actions"><button class="btn" onclick="pdfF29()">Descargar resumen F29</button></div>
+  </div>
+  <div class="card">
+    <h2>Planilla de rendición Sercotec (PDF)</h2>
+    <p class="sub">Todos los gastos del proyecto, con su respaldo y el saldo por categoría.</p>
+    <div class="actions"><button class="btn" onclick="pdfSercotec()">Descargar planilla</button></div>
+  </div>
+  <div class="card">
+    <h2>Libro diario (CSV)</h2>
+    <p class="sub">Los asientos del mes, para abrir en Excel o entregar a tu contador.</p>
+    <div class="actions"><button class="btn ghost" onclick="exportLibroCSV()">Descargar libro diario</button></div>
+  </div>
+</section>
+
+<!-- INVENTARIO -->
+<section id="inventario">
+  <div class="card">
+    <h2>Inventario</h2>
+    <p class="sub">Anota cuánto material tienes. Te avisamos cuando quede poco.</p>
+    <div id="invList"></div>
+  </div>
+  <div class="card">
+    <h2>Agregar material</h2>
+    <label>Nombre</label>
+    <input id="iName" placeholder="Ej: MDF 3 mm plancha 60x90">
+    <div class="g3">
+      <div><label>Stock actual</label><input id="iStock" type="number" min="0" inputmode="numeric"></div>
+      <div><label>Unidad</label><select id="iUnit"><option>unidades</option><option>planchas</option><option>metros</option><option>kilos</option></select></div>
+      <div><label>Avisar si quedan</label><input id="iMin" type="number" min="0" inputmode="numeric"></div>
+    </div>
+    <div class="actions"><button class="btn" onclick="addItem()">Guardar material</button></div>
+    <div class="msg" id="iMsg"></div>
+  </div>
+  <div class="card">
+    <h2>Mermas y triturado</h2>
+    <p class="sub">Registra los recortes y restos que llevas al proceso de triturado para mezclas Jesmonite.</p>
+    <div id="mermaList"></div>
+    <label>Material</label>
+    <select id="mItem"></select>
+    <div class="g2">
+      <div><label>Cantidad</label><input id="mQty" type="number" min="0" step="0.1" inputmode="decimal"></div>
+      <div><label>Motivo</label><select id="mWhy"><option>Recorte reutilizable</option><option>Merma para triturar</option><option>Dañado</option></select></div>
+    </div>
+    <div class="actions"><button class="btn ember" onclick="addMerma()">Registrar salida</button></div>
+    <div class="msg" id="mermaMsg"></div>
+  </div>
+</section>
+
+<!-- SERCOTEC -->
+<section id="sercotec">
+  <div id="serCats"></div>
+  <div class="card">
+    <h2>Rendición Sercotec</h2>
+    <p class="sub">Anota cada gasto del proyecto con su respaldo. Así la rendición queda ordenada desde el inicio.</p>
+    <label>Presupuesto aprobado del proyecto <span class="help">Monto que aparece en tu convenio.</span></label>
+    <input id="sPresup" type="number" min="0" inputmode="numeric" onchange="savePresup()">
+    <div class="bar"><i id="sBar"></i></div>
+    <div class="split light" style="margin-top:12px">
+      <div class="light"><span>Rendido (neto)</span><b id="sRend">$0</b></div>
+      <div class="light"><span>Saldo por usar</span><b id="sSaldo">$0</b></div>
+    </div>
+    <p class="help" id="sWarn"></p>
+  </div>
+  <div class="card">
+    <h2>Gastos del proyecto</h2>
+    <div id="sList"></div>
+  </div>
+  <div class="card">
+    <h2>Agregar gasto</h2>
+    <label>Categoría</label>
+    <select id="gCat"><option>Máquina láser</option><option>Equipamiento complementario</option><option>Materiales</option><option>Software y herramientas</option><option>Marketing</option><option>Otro</option></select>
+    <div class="g2">
+      <div><label>Fecha</label><input id="gDate" type="date"></div>
+      <div><label>Proveedor</label><input id="gProv"></div>
+    </div>
+    <div class="g2">
+      <div><label>N° de factura o boleta</label><input id="gDoc" inputmode="numeric"></div>
+      <div><label>Monto neto (sin IVA)</label><input id="gNeto" type="number" min="0" inputmode="numeric"></div>
+    </div>
+    <div style="margin-top:12px"><button id="gRes" class="btn ghost small" onclick="toggleRes()">Tengo el respaldo</button></div>
+    <div class="actions"><button class="btn" onclick="addGasto()">Guardar gasto</button></div>
+    <div class="msg" id="gMsg"></div>
+  </div>
+</section>
+
+<!-- FECHAS -->
+<section id="fechas">
+  <div class="card">
+    <h2>Mi calendario</h2>
+    <p class="sub">Toca una obligación para ir directo a completarla.</p>
+    <div id="fcal"></div>
+  </div>
+  <div class="card">
+    <h2>Pendientes</h2>
+    <p class="sub">Cada pendiente tiene un botón que te lleva a la pantalla donde se completa.</p>
+    <div id="todoList"></div>
+  </div>
+  <div class="card">
+    <h2>Lo urgente para no tener multas</h2>
+    <p class="sub">Los puntos que más suelen fallar en empresas nuevas. Revísalos cada mes.</p>
+    <div class="row"><div><b>F29 mensual</b><div class="m">Declara y paga el mes anterior. Un solo F29 por período.</div></div><span class="pill bad">Mensual</span></div>
+    <div class="row"><div><b>Retención a honorarios (Cód. 151)</b><div class="m">Si pagas honorarios, retienes y pagas el día 12 del mes siguiente (art. 79 LIR).</div></div><span class="pill bad">Día 12</span></div>
+    <div class="row"><div><b>Acuse de recibo de facturas</b><div class="m">8 días corridos desde que recibes la factura. Sin acuse, el IVA de la compra puede no aceptarse.</div></div><span class="pill warn">8 días</span></div>
+    <div class="row"><div><b>Boletas y facturas electrónicas</b><div class="m">Cada venta debe documentarse. Las boletas se emiten al momento de la venta.</div></div><span class="pill warn">Siempre</span></div>
+    <div class="row"><div><b>Libro de compras y ventas</b><div class="m">El resumen mensual del IVA. Tu contador lo revisa antes de declarar.</div></div><span class="pill">Mensual</span></div>
+    <div class="row"><div><b>Patente municipal</b><div class="m">Semestral. Confirma las fechas con la Municipalidad de Calama.</div></div><span class="pill">Semestral</span></div>
+    <div class="row"><div><b>Declaración de renta (F22)</b><div class="m">Anual, en abril. Tu contador prepara el cierre.</div></div><span class="pill">Abril</span></div>
+    <div class="actions"><button class="btn" onclick="go('f29')">Declarar mi F29 ahora</button></div>
+  </div>
+  <div class="card">
+    <h2>Calendario tributario</h2>
+    <p class="sub">Fechas para tener presentes. Confirma cada una en sii.cl o con tu contador.</p>
+    <div id="calList"></div>
+  </div>
+  <div class="card">
+    <h2>Día del F29</h2>
+    <p class="sub">Puedes cambiarlo si el SII te indica otro día.</p>
+    <input id="f29Day" type="number" min="1" max="28" inputmode="numeric" onchange="saveF29()">
+  </div>
+  <div class="card">
+    <h2>Acuse de facturas de proveedor</h2>
+    <p class="sub">Tienes 8 días corridos desde que recibes una factura de proveedor para darle acuse en el SII.</p>
+    <div id="acuseList"></div>
+  </div>
+</section>
+
+<!-- AJUSTES -->
+<section id="ajustes">
+  <div class="card">
+    <h2>Accesibilidad</h2>
+    <p class="sub">Hazla cómoda para tus ojos y tu forma de usarla.</p>
+    <div class="actions"><button class="btn ghost" id="bigBtn" onclick="toggleBig()">Activar letra grande</button></div>
+    <p class="help">Usa también el tamaño de letra de tu celular o navegador, si lo necesitas.</p>
+  </div>
+  <div class="card">
+    <h2>Créditos de código abierto</h2>
+    <p class="sub">Esta app usa y se inspira en proyectos de código abierto. Gracias a sus autores.</p>
+    <div class="row"><div><b>Chart.js</b><div class="m">Gráficos · licencia MIT</div></div></div>
+    <div class="row"><div><b>LibreDTE</b><div class="m">Referencia de facturación electrónica chilena · código abierto</div></div></div>
+    <div class="row"><div><b>FacturaScripts y Odoo</b><div class="m">Referencia de gestión de inventario y ventas</div></div></div>
+  </div>
+  <div class="card">
+    <h2>Datos de tu negocio</h2>
+    <p class="sub">Esto aparece en tus cotizaciones. No guardamos RUT ni direcciones particulares aquí.</p>
+    <label>Nombre del negocio</label>
+    <input id="sName">
+    <label>Régimen tributario <span class="help">Según tu inicio de actividades.</span></label>
+    <select id="sRegime">
+      <option value="pro">Pro Pyme Transparente</option>
+      <option value="otro">Otro régimen</option>
+      <option value="nose">No estoy seguro (consulta a tu contador)</option>
+    </select>
+    <label>¿Tienes contador?</label>
+    <select id="sAcc"><option value="si">Sí</option><option value="no">No, todavía no</option></select>
+    <div class="actions"><button class="btn" onclick="saveSettings()">Guardar datos</button></div>
+  </div>
+  <div class="card">
+    <h2>Modo prueba</h2>
+    <p class="sub">Practica cualquier formulario con datos de ejemplo antes de hacerlo de verdad. Tus datos reales no se tocan.</p>
+    <div class="actions"><button class="btn ember" id="modeBtn" onclick="toggleMode()">Entrar al modo prueba</button></div>
+  </div>
+  <div class="card">
+    <h2>Respaldo</h2>
+    <p class="sub">Tus datos se guardan solo en este equipo. Descarga un respaldo cada mes.</p>
+    <div class="actions"><button class="btn" onclick="exportData()">Descargar respaldo</button></div>
+    <label>Restaurar desde un respaldo</label>
+    <input type="file" accept="application/json" onchange="importData(this.files[0])">
+    <div class="actions" style="margin-top:14px">
+      <button class="btn danger" onclick="restartWizard()">Volver a hacer el asistente de inicio</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<nav class="tabs" id="tabs">
+  <button class="on" data-t="hoy"><span class="ic">🏠</span>Hoy</button>
+  <button data-t="cotizar"><span class="ic">🧾</span>Cotizar</button>
+  <button data-t="pedidos"><span class="ic">📝</span>Pedidos</button>
+  <button data-t="mov"><span class="ic">📒</span>Movimientos</button>
+  <button data-t="precios"><span class="ic">🏷️</span>Precios</button>
+  <button data-t="mas"><span class="ic">➕</span>Más</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/driver.js/1.3.1/driver.js.iife.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales-all.global.min.js" defer></script>
+<script>
+/* =========================================================
+   Tinta Láser · App personal · v3
+   Módulos: datos · utilidades · asistente · vistas · inicio
+   Para crecer: nueva sección en HTML, una vista en VIEWS
+   y un acceso desde "Más".
+   ========================================================= */
+
+/* ---------- 1. Datos ---------- */
+const KEY = 'tinta-laser-v3';
+const OLD_KEY = 'tinta-laser-v2';
+const IVA = 0.19;
+const DEFAULT = () => ({
+  setup:false, step:0,
+  settings:{name:'Tinta Láser Manufactura Circular SpA', regime:'pro', accountant:'si', emit:''},
+  f29Day:12,
+  checks:{},
+  products:[],
+  movs:[],
+  pedidos:[],
+  items:[],
+  mermas:[],
+  sercotec:{presupuesto:0, gastos:[]},
+  kind:'venta',
+  quote:null,
+  clientes:[], proveedores:[], ofertas:[], competencia:[], campanas:[],
+  costos:{},                       // costo por producto: {mat, min, emp}
+  costosBase:{energiaMin:2.5, moMin:83},   // CLP por minuto (referencia; ajústalo a tu caso)
+  fijos:[                          // gastos fijos mensuales: EJEMPLO, reemplázalos por los tuyos
+    {id:1, nombre:'Contador / asesoría', monto:35000},
+    {id:2, nombre:'Herramientas y software', monto:20000},
+    {id:3, nombre:'Publicidad digital', monto:40000},
+    {id:4, nombre:'Luz e internet (proporcional)', monto:25000},
+    {id:5, nombre:'Mantención de la máquina', monto:15000},
+    {id:6, nombre:'Depreciación de la máquina', monto:50000}
+  ]
+});
+/* Modo: 'real' o 'prueba'. Cada modo guarda sus datos aparte. */
+let mode = localStorage.getItem('tl-mode') === 'prueba' ? 'prueba' : 'real';
+const keyFor = m => m === 'prueba' ? KEY + '-prueba' : KEY;
+function seedPractice(){
+  const d = DEFAULT();
+  const hoy = new Date().toLocaleDateString('en-CA');
+  d.setup = true;
+  d.settings.name = 'PRUEBA · Tinta Láser';
+  d.products = [{id:1, name:'(prueba) Bandeja madera 20x30', tiers:[2490,1990,1790], mods:[{name:'Frase calada', price:500}]}];
+  d.movs = [
+    {id:1, kind:'venta',  date:hoy, doc:'Boleta',  num:'P-001', desc:'(prueba) 10 bandejas', amount:24900},
+    {id:2, kind:'compra', date:hoy, doc:'Factura', num:'P-F1',  desc:'(prueba) MDF 3 mm',   amount:59500}
+  ];
+  d.sercotec = {presupuesto:3500000, gastos:[{id:3, cat:'Máquina láser', date:hoy, prov:'(prueba) Proveedor', doc:'P-F2', neto:1000000, resp:true}]};
+  return d;
+}
+function loadMode(m){
+  try{
+    const d = JSON.parse(localStorage.getItem(keyFor(m)));
+    if (d) return Object.assign(DEFAULT(), d, {sercotec:Object.assign(DEFAULT().sercotec, d.sercotec||{})});
+    if (m === 'real'){
+      const old = JSON.parse(localStorage.getItem(OLD_KEY));
+      if (old) return Object.assign(DEFAULT(), old);
+    }
+  }catch(e){}
+  return m === 'prueba' ? seedPractice() : DEFAULT();
+}
+let db = loadMode(mode);
+function save(){ localStorage.setItem(keyFor(mode), JSON.stringify(db)); }
+
+/* ---------- 2. Utilidades ---------- */
+const $ = id => document.getElementById(id);
+const fmt = n => '$' + Math.round(n || 0).toLocaleString('es-CL');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const todayStr = () => new Date().toLocaleDateString('en-CA');
+const dayDiff = d => Math.ceil((d - new Date(new Date().toDateString())) / 864e5);
+const fdate = d => d.toLocaleDateString('es-CL',{day:'numeric',month:'long'});
+const uid = () => Date.now() + Math.floor(Math.random()*1000);
+let toastT;
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2800);
+}
+function nextF29(){
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth(), db.f29Day);
+  if (now.getDate() > db.f29Day) d.setMonth(d.getMonth() + 1);
+  return d;
+}
+
+/* ---------- 3. Navegación ---------- */
+function go(id){
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === id));
+  const tab = id === 'mas' || ['inventario','sercotec','fechas','ajustes','tramites','practica','f29','documentos','clientes','proveedores','competencia','rentabilidad','campanas'].includes(id) ? 'mas' : id;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
+  window.scrollTo({top:0, behavior:'smooth'});
+  renderView(id);
+}
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => go(b.dataset.t));
+
+/* ---------- 4. Asistente de inicio ---------- */
+function opt(name, val, title, desc, checked){
+  return `<label class="opt ${checked?'sel':''}"><input type="radio" name="${name}" value="${val}" ${checked?'checked':''} onchange="markOpt(this)">
+    <div><b>${title}</b><small>${desc}</small></div></label>`;
+}
+function markOpt(el){ document.querySelectorAll(`.opt input[name="${el.name}"]`).forEach(i => i.closest('.opt').classList.toggle('sel', i.checked)); }
+function radio(name){ const r = document.querySelector(`input[name="${name}"]:checked`); return r ? r.value : ''; }
+const WIZ = [
+  {title:'¡Bienvenido!', body:() => `
+     <p class="sub">En menos de 2 minutos dejamos tu app lista. Te hago unas preguntas simples.</p>
+     <label>¿Cómo se llama tu negocio?</label>
+     <input id="wName" value="${esc(db.settings.name)}">
+     <span class="help">Así aparecerá en tus cotizaciones.</span>`,
+   save:() => { const v = $('wName').value.trim(); if (!v) return 'Escribe el nombre de tu negocio.'; db.settings.name = v; }},
+  {title:'¿Cuál es tu régimen tributario?', body:() => `
+     <p class="sub">Está en tu certificado de inicio de actividades del SII. Si no lo tienes a mano, elige la última opción.</p>
+     <div class="opts">
+       ${opt('regime','pro','Pro Pyme Transparente','Régimen indicado en tu inicio de actividades (confirma en el certificado).', db.settings.regime==='pro')}
+       ${opt('regime','otro','Otro régimen','Elige esta si tu certificado dice otra cosa.', db.settings.regime==='otro')}
+       ${opt('regime','nose','No lo sé','Revísalo después con tu contador.', db.settings.regime==='nose')}
+     </div>`,
+   save:() => { db.settings.regime = radio('regime') || 'nose'; }},
+  {title:'¿Qué día vence tu IVA mensual?', body:() => `
+     <p class="sub">Es el formulario F29. Déjalo en 12 si no estás seguro: la app te lo recordará y lo puedes cambiar luego.</p>
+     <label>Día del mes</label>
+     <input id="wDay" type="number" min="1" max="28" value="${db.f29Day}" inputmode="numeric">
+     <span class="help">Confirma la fecha en sii.cl antes de declarar por primera vez.</span>`,
+   save:() => { const v = parseInt($('wDay').value); if (!(v>=1 && v<=28)) return 'Escribe un día entre 1 y 28.'; db.f29Day = v; }},
+  {title:'¿Trabajas con contador?', body:() => `
+     <p class="sub">El contador revisa tu declaración. La app te muestra cuándo conviene consultarle.</p>
+     <div class="opts">
+       ${opt('acc','si','Sí, tengo contador','Te avisaremos cuándo revisar con él.', db.settings.accountant==='si')}
+       ${opt('acc','no','Todavía no','Te recomendaremos las primeras cosas a revisar.', db.settings.accountant==='no')}
+     </div>`,
+   save:() => { db.settings.accountant = radio('acc') || 'no'; }},
+  {title:'¿Cómo emites tus boletas y facturas?', body:() => `
+     <p class="sub">La app no reemplaza el sistema del SII. Aquí solo anotamos cómo lo haces para recordártelo.</p>
+     <div class="opts">
+       ${opt('emit','sii','Portal del SII','Emisión gratuita desde sii.cl.', db.settings.emit==='sii')}
+       ${opt('emit','libre','LibreDTE u otro sistema','Un software de facturación electrónica.', db.settings.emit==='libre')}
+       ${opt('emit','aun','Todavía no emito','Te guiaremos antes de tu primera venta.', db.settings.emit==='aun' || !db.settings.emit)}
+     </div>`,
+   save:() => { db.settings.emit = radio('emit') || 'aun'; }},
+  {title:'¡Listo!', body:() => `
+     <p class="sub">Tu app está configurada. Estos son los pasos sugeridos, en orden. Los verás en Hoy.</p>
+     <div class="card" style="box-shadow:none;margin:0">
+       <div class="row"><div><b>1. Carga tus productos y precios</b><div class="m">Así podrás cotizar en segundos.</div></div></div>
+       <div class="row"><div><b>2. Confirma tu firma electrónica</b><div class="m">La necesitas para emitir y declarar.</div></div></div>
+       <div class="row"><div><b>3. Carga tu inventario de material</b><div class="m">Así sabes cuándo reponer.</div></div></div>
+     </div>`,
+   save:() => {}}
+];
+let wizI = 0;
+function openWizard(){ wizI = Math.min(db.step || 0, WIZ.length-1); $('wizard').classList.add('on'); drawWiz(); }
+function drawWiz(){
+  $('wbarFill').style.width = (wizI / (WIZ.length - 1) * 100) + '%';
+  $('wizBody').innerHTML = `<div class="wiz-step"><h2>${WIZ[wizI].title}</h2>${WIZ[wizI].body()}</div>`;
+  $('wizBack').style.visibility = wizI === 0 ? 'hidden' : 'visible';
+  $('wizNext').textContent = wizI === WIZ.length - 1 ? 'Empezar a usar la app' : 'Siguiente';
+}
+$('wizBack').onclick = () => { if (wizI > 0){ wizI--; drawWiz(); } };
+$('wizNext').onclick = () => {
+  const err = WIZ[wizI].save();
+  if (err){ toast(err); return; }
+  db.step = wizI + 1; save();
+  if (wizI < WIZ.length - 1){ wizI++; drawWiz(); }
+  else { db.setup = true; db.step = 0; save(); $('wizard').classList.remove('on'); refreshAll(); toast('Listo. Tu app está configurada.'); if (typeof _wizFinish === 'function') _wizFinish(); }
+};
+function restartWizard(){ db.setup = false; db.step = 0; save(); openWizard(); }
+
+/* ---------- 5. Hoy ---------- */
+const STEPS = [
+  {id:'prices', t:'Cargar mis productos y precios', d:'Así cotizas en segundos.', auto:() => db.products.length > 0, go:'precios'},
+  {id:'firma',  t:'Confirmar mi firma electrónica', d:'Sin ella no puedes emitir ni declarar.', go:'ajustes'},
+  {id:'stock',  t:'Cargar mi inventario de material', d:'Para saber cuándo reponer.', auto:() => db.items.length > 0, go:'inventario'},
+  {id:'first',  t:'Registrar mi primera venta', d:'Cada boleta o factura se anota aquí.', auto:() => db.movs.some(m => m.kind==='venta'), go:'mov'},
+  {id:'sercotec', t:'Anotar mis gastos Sercotec con respaldo', d:'Así la rendición queda ordenada.', auto:() => db.sercotec.gastos.length > 0, go:'sercotec'},
+  {id:'backup', t:'Descargar mi primer respaldo', d:'Guárdalo en un lugar seguro.', go:'ajustes'}
+];
+function isDone(s){ return s.auto ? s.auto() : !!db.checks[s.id]; }
+function renderHoy(){
+  const f = nextF29(), d = dayDiff(f);
+  $('f29Big').textContent = fdate(f);
+  $('f29Sub').textContent = d === 0 ? 'Vence hoy.' : `Faltan ${d} días. Declara el mes anterior.`;
+  $('f29Pill').className = 'pill ' + (d <= 5 ? 'bad' : d <= 10 ? 'warn' : 'dark');
+  $('f29Pill').textContent = d <= 5 ? 'Urgente' : 'F29';
+  $('topSub').textContent = db.settings.name;
+
+  const done = STEPS.filter(isDone).length;
+  $('checklist').innerHTML = `<div class="bar"><i style="width:${done/STEPS.length*100}%"></i></div>
+    <div class="m" style="font-size:13px;color:var(--muted);margin-bottom:6px">${done} de ${STEPS.length} pasos listos</div>` +
+    STEPS.map((s,i) => `
+    <div class="step ${isDone(s)?'done':''}" onclick="${s.auto ? `go('${s.go}')` : `toggleCheck('${s.id}')`}">
+      <div class="dot">${isDone(s)?'✓':i+1}</div>
+      <div><div class="t">${s.t}</div><div class="d">${s.d}</div></div>
+    </div>`).join('');
+
+  const alerts = [];
+  db.movs.filter(m => m.kind==='venta' && !m.num).forEach(m =>
+    alerts.push(`<div class="row"><div><b>Falta el número de boleta</b><div class="m">${esc(m.desc)||'Venta'} · ${fmt(m.amount)}</div></div><button class="btn small" onclick="go('mov')">Completar</button></div>`));
+  db.movs.filter(m => m.kind==='compra' && !m.acuse && dayDiff(new Date(m.date+'T00:00')) >= -8).forEach(m => {
+    const lim = new Date(new Date(m.date+'T00:00').getTime() + 8*864e5);
+    alerts.push(`<div class="row"><div><b>Acuse de factura: ${esc(m.desc||m.num)}</b><div class="m">Hasta el ${fdate(lim)}</div></div><span class="pill warn">Pendiente</span></div>`);
+  });
+  if (db.sercotec && db.sercotec.fechaRend){
+    const dr = dayDiff(new Date(db.sercotec.fechaRend+'T00:00'));
+    if (dr <= 30) alerts.push(`<div class="row"><div><b>Rendición Sercotec ${dr < 0 ? 'vencida' : 'en ' + dr + ' días'}</b><div class="m">Revisa que cada gasto tenga su respaldo.</div></div><button class="btn small" onclick="go('sercotec')">Revisar</button></div>`);
+  }
+  const prevYm = (() => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth()-1); return d.toLocaleDateString('en-CA').slice(0,7); })();
+  if (!(db.f29hist||[]).some(h => h.ym === prevYm) && dayDiff(f29Venc(prevYm)) <= 10)
+    alerts.push(`<div class="row"><div><b>F29 de ${prevYm} sin declarar</b><div class="m">Vence ${fdate(f29Venc(prevYm))}. Revísalo paso a paso.</div></div><button class="btn small" onclick="go('f29')">Abrir</button></div>`);
+  const pend = db.pedidos.filter(p => p.estado !== 'cobrado' && p.estado !== 'entregado').length;
+  if (pend) alerts.push(`<div class="row"><div><b>${pend} pedido${pend>1?'s':''} en curso</b><div class="m">Revisa su avance</div></div><button class="btn small" onclick="go('pedidos')">Ver</button></div>`);
+  db.items.filter(i => i.stock <= i.min).forEach(i =>
+    alerts.push(`<div class="row"><div><b>Queda poco: ${esc(i.name)}</b><div class="m">Quedan ${i.stock} ${esc(i.unit)}</div></div><span class="pill bad">Reponer</span></div>`));
+  if (!db.products.length) alerts.push(`<div class="row"><div><b>Aún no tienes productos</b><div class="m">Agrégalos para poder cotizar.</div></div><button class="btn small" onclick="go('precios')">Agregar</button></div>`);
+  $('alerts').innerHTML = alerts.join('') || '<div class="empty">Todo al día. Nada urgente por ahora.</div>';
+}
+function toggleCheck(id){ db.checks[id] = !db.checks[id]; save(); renderHoy(); }
+function setKind(k){ db.kind = k; save(); if($('mov').classList.contains('on')) renderMov(); }
+function newPedido(){ db.quote = null; save(); go('pedidos'); openPedidoForm(); }
+
+/* ---------- 6. Cotizar ---------- */
+function renderCotizar(){
+  const sel = $('qProd'), cur = sel.value;
+  if (!db.products.length){
+    sel.innerHTML = '<option value="">Primero agrega un producto</option>';
+    $('qMods').innerHTML = '<div class="empty">Ve a Precios y agrega tu primer producto.</div>';
+    $('qResult').style.display = 'none'; return;
+  }
+  $('qResult').style.display = '';
+  sel.innerHTML = db.products.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  if (cur && db.products.some(p => p.id == cur)) sel.value = cur;
+  if (!$('qDate').value) $('qDate').value = todayStr();
+  renderMods();
+}
+function curProduct(){ return db.products.find(p => p.id == $('qProd').value); }
+function renderMods(){
+  const p = curProduct();
+  $('qMods').innerHTML = p && p.mods.length ? p.mods.map((m,i) => `
+    <label class="mod"><input type="checkbox" class="modchk" value="${i}" onchange="calc()">
+    <span>${esc(m.name)}</span><span class="p">+${fmt(m.price)}</span></label>`).join('')
+    : '<div class="empty">Este producto no tiene adicionales.</div>';
+  calc();
+}
+function calc(){
+  const p = curProduct(); if (!p) return;
+  const q = Math.max(1, parseInt($('qQty').value) || 1);
+  const tier = q <= 10 ? 0 : q <= 39 ? 1 : 2;
+  const names = ['1 a 10 unidades','11 a 39 unidades','40 o más unidades'];
+  const chosen = [...document.querySelectorAll('.modchk:checked')].map(c => p.mods[+c.value]);
+  const unit = (p.tiers[tier] || 0) + chosen.reduce((a,m) => a + m.price, 0);
+  const total = unit * q, neto = Math.round(total / (1 + IVA));
+  $('qTotal').textContent = fmt(total);
+  $('qNeto').textContent = fmt(neto);
+  $('qIva').textContent = fmt(total - neto);
+  $('qDetail').textContent = `${q} u. · ${names[tier]} · ${fmt(unit)} c/u`;
+  window._q = {p:p.name, pid:p.id, q, unit, total, neto, iva:total-neto, mods:chosen.map(m=>m.name)};
+}
+function copyQuote(){
+  const d = window._q; if (!d) return;
+  const txt = `Cotización ${db.settings.name}\n${$('qDate').value}\n${d.q} x ${d.p}` +
+    (d.mods.length ? `\nAdicionales: ${d.mods.join(', ')}` : '') +
+    `\nPrecio unitario: ${fmt(d.unit)} (IVA incluido)\nTotal: ${fmt(d.total)}\nNeto: ${fmt(d.neto)} · IVA: ${fmt(d.iva)}`;
+  navigator.clipboard.writeText(txt).then(() => toast('Cotización copiada.'));
+}
+function quoteToPedido(){
+  const d = window._q; if (!d) return;
+  db.quote = {prodId:d.pid, prodName:d.p, qty:d.q, total:d.total};
+  save(); go('pedidos'); openPedidoForm();
+  toast('Cotización lista. Completa los datos del pedido.');
+}
+
+/* ---------- 7. Pedidos ---------- */
+const ETAPAS = [
+  {k:'pendiente', n:'Pendiente', d:'Recibido, falta diseño o vector'},
+  {k:'corte', n:'En corte', d:'En la máquina láser'},
+  {k:'post', n:'Post-proceso', d:'Pintura, fraguado o empaque'},
+  {k:'listo', n:'Listo', d:'Esperando al cliente'},
+  {k:'entregado', n:'Entregado', d:'Al entregar, se anota la venta'},
+  {k:'cobrado', n:'Cobrado', d:'Pedido cerrado'}
+];
+function etapaIdx(k){ return ETAPAS.findIndex(e => e.k === k); }
+function renderPedidos(){
+  const list = db.pedidos.slice().sort((a,b) => b.id - a.id);
+  $('pedList').innerHTML = ETAPAS.map(e => {
+    const items = list.filter(p => p.estado === e.k);
+    if (!items.length) return '';
+    return `<div class="group">${e.n} · ${items.length}</div>` + items.map(p => {
+      const i = etapaIdx(p.estado), next = ETAPAS[i+1];
+      return `<div class="card" style="margin-bottom:10px">
+        <div class="row" style="border:0;padding:0">
+          <div><b>${esc(p.client)||'Sin nombre'}</b><div class="m">${p.qty} × ${esc(p.prodName)} · ${fmt(p.total)}</div>
+          <div class="m">${esc(e.d)}</div></div>
+          <button class="btn danger" onclick="delPedido(${p.id})">Borrar</button>
+        </div>
+        ${next ? `<div class="actions"><button class="btn small" onclick="advance(${p.id})">Pasar a: ${next.n} →</button></div>` : ''}
+      </div>`;
+    }).join('');
+  }).join('') || '<div class="empty">Aún no tienes pedidos. Crea uno desde Cotizar o con "Nuevo pedido".</div>';
+}
+function openPedidoForm(){
+  const q = db.quote;
+  const prods = db.products.map(p => `<option value="${p.id}" ${q && q.prodId==p.id?'selected':''}>${esc(p.name)}</option>`).join('');
+  $('pedidos').insertAdjacentHTML('afterbegin', `
+    <div class="card" id="pedForm">
+      <h2>${q ? 'Nuevo pedido desde cotización' : 'Nuevo pedido'}</h2>
+      <p class="sub">Solo necesitamos lo básico. El resto lo completas después.</p>
+      <label>Nombre del cliente</label>
+      <input id="pClient" placeholder="Ej: Juan Pérez o Empresa X">
+      <div class="g2">
+        <div><label>Producto</label><select id="pProd">${prods || '<option value="">Agrega un producto primero</option>'}</select></div>
+        <div><label>Cantidad</label><input id="pQty" type="number" min="1" value="${q?q.qty:1}" inputmode="numeric"></div>
+      </div>
+      <label>Total con IVA <span class="help">Se calcula solo si eliges un producto y cantidad, pero puedes cambiarlo.</span></label>
+      <input id="pTotal" type="number" min="0" inputmode="numeric" value="${q?q.total:''}">
+      <label>Nota <span class="help">Ej: entrega el viernes, color verde.</span></label>
+      <input id="pNote">
+      <div class="actions">
+        <button class="btn ghost" onclick="$('pedForm').remove()">Cancelar</button>
+        <button class="btn" onclick="savePedido()">Guardar pedido</button>
+      </div>
+      <div class="msg" id="pedMsg"></div>
+    </div>`);
+  $('pedForm').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function savePedido(){
+  const client = $('pClient').value.trim();
+  const prod = db.products.find(p => p.id == $('pProd').value);
+  const qty = parseInt($('pQty').value) || 1;
+  const total = Math.round(+$('pTotal').value);
+  if (!client){ $('pedMsg').textContent = 'Escribe el nombre del cliente.'; return; }
+  if (!prod){ $('pedMsg').textContent = 'Primero agrega un producto en Precios.'; return; }
+  if (!total){ $('pedMsg').textContent = 'Escribe el total con IVA.'; return; }
+  db.pedidos.push({id:uid(), client, prodId:prod.id, prodName:prod.name, qty, total, estado:'pendiente', note:$('pNote').value.trim(), fecha:todayStr(), movId:null});
+  db.quote = null; save();
+  toast('Pedido guardado.'); refreshAll();
+}
+function advance(id){
+  const p = db.pedidos.find(x => x.id === id); if (!p) return;
+  const i = etapaIdx(p.estado); if (i >= ETAPAS.length - 1) return;
+  p.estado = ETAPAS[i+1].k;
+  if (p.estado === 'entregado' && !p.movId){
+    const m = {id:uid(), kind:'venta', date:todayStr(), doc:'Boleta', num:'', desc:`${p.qty} × ${p.prodName} (${p.client})`, amount:p.total};
+    db.movs.push(m); p.movId = m.id;
+    toast('Pedido entregado. Venta anotada: falta el número de boleta.');
+  } else toast(`Pedido: ${ETAPAS[i+1].n}.`);
+  save(); refreshAll();
+}
+function delPedido(id){
+  if (!confirm('¿Borrar este pedido? La venta asociada, si existe, no se borra.')) return;
+  db.pedidos = db.pedidos.filter(p => p.id !== id); save(); refreshAll();
+}
+
+/* ---------- 8. Precios ---------- */
+let modRows = [];
+function addModRow(){ modRows.push({n:'', p:''}); drawModRows(); }
+function drawModRows(){
+  $('pModsAdd').innerHTML = modRows.map((m,i) => `
+    <div class="g2" style="margin-top:8px">
+      <input placeholder="Nombre del adicional" value="${esc(m.n)}" oninput="modRows[${i}].n=this.value">
+      <input type="number" min="0" inputmode="numeric" placeholder="Precio" value="${esc(m.p)}" oninput="modRows[${i}].p=this.value">
+    </div>`).join('');
+}
+function renderPrecios(){
+  $('catList').innerHTML = db.products.map(p => `
+    <div class="row">
+      <div><b>${esc(p.name)}</b>
+        <div class="m">1-10: ${fmt(p.tiers[0])} · 11-39: ${fmt(p.tiers[1])} · 40+: ${fmt(p.tiers[2])}</div>
+        <div class="m">${p.mods.map(m => esc(m.name)+' +'+fmt(m.price)).join(' · ') || 'Sin adicionales'}</div>
+      </div>
+      <button class="btn danger" onclick="delProduct(${p.id})">Borrar</button>
+    </div>`).join('') || '<div class="empty">Aún no tienes productos. Agrega el primero abajo.</div>';
+  drawModRows();
+}
+function addProduct(){
+  const name = $('pName').value.trim();
+  const t = [$('pT1').value,$('pT2').value,$('pT3').value].map(Number);
+  if (!name){ $('pMsg').textContent = 'Escribe el nombre del producto.'; return; }
+  if (t.some(x => !x || x < 0)){ $('pMsg').textContent = 'Escribe los tres precios (con IVA incluido).'; return; }
+  const mods = modRows.filter(m => m.n.trim() && +m.p > 0).map(m => ({name:m.n.trim(), price:+m.p}));
+  db.products.push({id:uid(), name, tiers:t, mods});
+  modRows = []; save();
+  ['pName','pT1','pT2','pT3'].forEach(i => $(i).value=''); $('pMsg').textContent='';
+  toast('Producto guardado.'); refreshAll();
+}
+function delProduct(id){
+  if (!confirm('¿Borrar este producto?')) return;
+  db.products = db.products.filter(p => p.id !== id); save(); refreshAll();
+}
+
+/* ---------- 9. Movimientos ---------- */
+function setKindUI(){
+  $('kVenta').classList.toggle('on', db.kind==='venta');
+  $('kCompra').classList.toggle('on', db.kind==='compra');
+}
+function renderMov(){
+  setKindUI();
+  if (!$('mDate').value) $('mDate').value = todayStr();
+  const ym = todayStr().slice(0,7);
+  let deb = 0, cre = 0;
+  db.movs.filter(m => m.date.startsWith(ym)).forEach(m => {
+    const iva = m.amount - Math.round(m.amount / (1+IVA));
+    if (m.kind==='venta') deb += iva; else cre += iva;
+  });
+  $('ivaDeb').textContent = fmt(deb);
+  $('ivaCre').textContent = fmt(cre);
+  const diff = deb - cre;
+  $('f29Est').textContent = diff >= 0
+    ? `Estimado a pagar este mes: ${fmt(diff)}.`
+    : `Tienes crédito a favor de ${fmt(-diff)}, que puede usarse el mes siguiente.`;
+  const list = [...db.movs].sort((a,b) => b.date.localeCompare(a.date)).slice(0,30);
+  $('movList').innerHTML = list.map(m => `
+    <div class="row">
+      <div><b>${esc(m.desc) || (m.kind==='venta'?'Venta':'Compra')}</b>
+        <div class="m">${m.date} · ${esc(m.doc)} ${esc(m.num) || '<span style="color:var(--bad)">sin número</span>'} · ${m.kind==='venta'?'Venta':'Compra'}</div></div>
+      <div style="text-align:right"><div class="amt">${fmt(m.amount)}</div>
+        ${m.kind==='compra' ? `<button class="btn small ${m.acuse?'ghost':''}" onclick="toggleAcuse(${m.id})">${m.acuse?'✓ Acuse hecho':'Marcar acuse'}</button>` : ''}
+        <button class="btn danger" onclick="editNum(${m.id})">${m.num?'Editar':'Anotar N°'}</button>
+        <button class="btn danger" onclick="delMov(${m.id})">Borrar</button></div>
+    </div>`).join('') || '<div class="empty">Aún no hay movimientos.</div>';
+}
+function editNum(id){
+  const m = db.movs.find(x => x.id === id); if (!m) return;
+  const n = prompt('Número de ' + (m.doc||'documento') + ':', m.num || '');
+  if (n === null) return;
+  m.num = n.trim(); save(); refreshAll(); toast('Número guardado.');
+}
+function addMov(){
+  const amount = Math.round(+$('mAmt').value);
+  const date = $('mDate').value;
+  if (!date){ $('mMsg').textContent = 'Elige la fecha.'; return; }
+  if (!amount || amount <= 0){ $('mMsg').textContent = 'Escribe el monto total con IVA.'; return; }
+  const mov = {id:uid(), kind:db.kind, date, doc:$('mDoc').value, num:$('mNum').value.trim(), desc:$('mDesc').value.trim(), amount, acuse:false};
+  db.movs.push(mov);
+  if (db.kind === 'compra' && $('mItemSel') && $('mItemSel').value){
+    const it = db.items.find(i => i.id == $('mItemSel').value);
+    const q = +$('mItemQty').value || 0;
+    if (it && q > 0){ it.stock = +(it.stock + q).toFixed(2); toast(`Stock de ${it.name} aumentado en ${q}.`); }
+  }
+  $('mItemQty') && ($('mItemQty').value = '');
+  save(); ['mNum','mDesc','mAmt'].forEach(i => $(i).value=''); $('mMsg').textContent='';
+  toast(db.kind==='venta' ? 'Venta registrada.' : 'Compra registrada.'); refreshAll();
+}
+function delMov(id){
+  if (!confirm('¿Borrar este movimiento?')) return;
+  db.movs = db.movs.filter(m => m.id !== id); save(); refreshAll();
+}
+
+/* ---------- 10. Inventario y mermas ---------- */
+function renderInventario(){
+  $('invList').innerHTML = db.items.map(i => `
+    <div class="row">
+      <div><b>${esc(i.name)}</b><div class="m">Quedan ${i.stock} ${esc(i.unit)} · avisar si quedan ${i.min}</div></div>
+      <div style="text-align:right">
+        <span class="pill ${i.stock<=i.min?'bad':''}">${i.stock<=i.min?'Reponer':'Ok'}</span>
+        <div style="margin-top:6px"><button class="btn small ghost" onclick="stockAdd(${i.id},1)">+1</button>
+        <button class="btn small ghost" onclick="stockAdd(${i.id},-1)">−1</button>
+        <button class="btn danger" onclick="delItem(${i.id})">Borrar</button></div>
+      </div>
+    </div>`).join('') || '<div class="empty">Aún no tienes material. Agrégalo abajo.</div>';
+  $('mItem').innerHTML = db.items.map(i => `<option value="${i.id}">${esc(i.name)}</option>`).join('') || '<option value="">Agrega un material primero</option>';
+  $('mermaList').innerHTML = db.mermas.slice(-6).reverse().map(m =>
+    `<div class="row"><div><b>${esc(m.name)}</b><div class="m">${m.date} · ${esc(m.why)}</div></div><div class="amt">${m.qty} ${esc(m.unit)}</div></div>`).join('') || '<div class="empty">Aún no hay mermas registradas.</div>';
+}
+function addItem(){
+  const name = $('iName').value.trim();
+  const stock = +$('iStock').value, min = +$('iMin').value || 0;
+  if (!name){ $('iMsg').textContent = 'Escribe el nombre del material.'; return; }
+  if (!(stock >= 0) || $('iStock').value === ''){ $('iMsg').textContent = 'Escribe cuánto tienes hoy.'; return; }
+  db.items.push({id:uid(), name, stock, min, unit:$('iUnit').value});
+  save(); ['iName','iStock','iMin'].forEach(i => $(i).value=''); $('iMsg').textContent='';
+  toast('Material guardado.'); refreshAll();
+}
+function stockAdd(id, n){
+  const i = db.items.find(x => x.id === id); if (!i) return;
+  i.stock = Math.max(0, i.stock + n); save(); refreshAll();
+}
+function delItem(id){
+  if (!confirm('¿Borrar este material?')) return;
+  db.items = db.items.filter(i => i.id !== id); save(); refreshAll();
+}
+function addMerma(){
+  const item = db.items.find(i => i.id == $('mItem').value);
+  const qty = +$('mQty').value;
+  if (!item){ $('mermaMsg').textContent = 'Primero agrega un material en la lista de arriba.'; return; }
+  if (!(qty > 0)){ $('mermaMsg').textContent = 'Escribe cuánto sale.'; return; }
+  if (qty > item.stock){ $('mermaMsg').textContent = `Solo tienes ${item.stock} ${item.unit}.`; return; }
+  item.stock = +(item.stock - qty).toFixed(2);
+  db.mermas.push({id:uid(), itemId:item.id, name:item.name, qty, unit:item.unit, why:$('mWhy').value, date:todayStr()});
+  save(); $('mQty').value=''; $('mermaMsg').textContent=''; toast('Salida registrada.'); refreshAll();
+}
+
+/* ---------- 11. Sercotec ---------- */
+let resp = false;
+function toggleRes(){ resp = !resp; $('gRes').classList.toggle('on', resp); $('gRes').textContent = resp ? '✓ Tengo el respaldo' : 'Tengo el respaldo'; }
+function savePresup(){ db.sercotec.presupuesto = Math.max(0, Math.round(+$('sPresup').value || 0)); save(); refreshAll(); }
+function renderSercotec(){
+  const s = db.sercotec;
+  $('sPresup').value = s.presupuesto || '';
+  const rend = s.gastos.reduce((a,g) => a + g.neto, 0);
+  const saldo = s.presupuesto - rend;
+  $('sRend').textContent = fmt(rend);
+  $('sSaldo').textContent = fmt(saldo);
+  $('sBar').style.width = (s.presupuesto ? Math.min(100, rend / s.presupuesto * 100) : 0) + '%';
+  const sinRes = s.gastos.filter(g => !g.resp).length;
+  $('sWarn').textContent = sinRes ? `${sinRes} gasto(s) sin respaldo marcado. Revísalos antes de rendir.`
+    : (s.presupuesto && saldo < 0 ? 'Te pasaste del presupuesto. Revisa con tu asesor.' : '');
+  $('sList').innerHTML = s.gastos.slice().reverse().map(g => `
+    <div class="row">
+      <div><b>${esc(g.cat)}</b><div class="m">${esc(g.prov)} · ${esc(g.doc)||'sin N°'} · ${g.date}</div>
+        ${g.resp ? '<span class="pill">Con respaldo</span>' : '<span class="pill warn">Falta respaldo</span>'}</div>
+      <div style="text-align:right"><div class="amt">${fmt(g.neto)} neto</div>
+        <button class="btn danger" onclick="delGasto(${g.id})">Borrar</button></div>
+    </div>`).join('') || '<div class="empty">Aún no hay gastos anotados.</div>';
+  $('gDate').value = $('gDate').value || todayStr();
+}
+function addGasto(){
+  const neto = Math.round(+$('gNeto').value);
+  if (!neto || neto <= 0){ $('gMsg').textContent = 'Escribe el monto neto (sin IVA).'; return; }
+  db.sercotec.gastos.push({id:uid(), cat:$('gCat').value, date:$('gDate').value || todayStr(), prov:$('gProv').value.trim(), doc:$('gDoc').value.trim(), neto, resp});
+  save(); ['gProv','gDoc','gNeto'].forEach(i => $(i).value=''); resp=false; $('gRes').classList.remove('on'); $('gRes').textContent='Tengo el respaldo';
+  $('gMsg').textContent=''; toast('Gasto anotado.'); refreshAll();
+}
+function delGasto(id){
+  if (!confirm('¿Borrar este gasto?')) return;
+  db.sercotec.gastos = db.sercotec.gastos.filter(g => g.id !== id); save(); refreshAll();
+}
+
+/* ---------- 12. Fechas ---------- */
+function renderFechas(){
+  $('f29Day').value = db.f29Day;
+  const f = nextF29();
+  const items = [
+    {t:'Formulario 29 (IVA mensual)', d:f, n:'Declara y paga el mes anterior. Día configurado: ' + db.f29Day + '.'},
+    {t:'Patente municipal', d:null, n:'Se paga dos veces al año (enero y julio). Confirma la fecha en la Municipalidad de Calama.'},
+    {t:'Declaración jurada (DDJJ)', d:null, n:'Febrero y marzo. Sobre retiros y honorarios.'},
+    {t:'Formulario 22 (renta anual)', d:null, n:'Abril. Tu contador te ayuda con el cierre.'}
+  ];
+  $('calList').innerHTML = items.map(i => `
+    <div class="row"><div><b>${i.t}</b><div class="m">${i.n}</div></div>
+    <div style="text-align:right;white-space:nowrap">${i.d ? `<div class="amt">${fdate(i.d)}</div><span class="pill ${dayDiff(i.d)<=5?'bad':''}">${dayDiff(i.d)} días</span>` : ''}</div></div>`).join('');
+  const recent = db.movs.filter(m => m.kind==='compra' && dayDiff(new Date(m.date+'T00:00')) >= -8);
+  $('acuseList').innerHTML = recent.map(m => {
+    const lim = new Date(new Date(m.date+'T00:00').getTime()+8*864e5);
+    return `<div class="row"><div><b>${esc(m.desc)||'Compra'}</b><div class="m">${esc(m.doc)} ${esc(m.num)}</div></div><div class="amt">${fdate(lim)}</div></div>`;
+  }).join('') || '<div class="empty">No tienes compras que requieran acuse ahora.</div>';
+}
+function saveF29(){ db.f29Day = Math.min(28, Math.max(1, +$('f29Day').value || 12)); save(); refreshAll(); toast('Día del F29 actualizado.'); }
+
+/* ---------- 13. Ajustes ---------- */
+function renderAjustes(){
+  $('sName').value = db.settings.name;
+  $('sRegime').value = db.settings.regime;
+  $('sAcc').value = db.settings.accountant;
+}
+function saveSettings(){
+  db.settings.name = $('sName').value.trim() || db.settings.name;
+  db.settings.regime = $('sRegime').value;
+  db.settings.accountant = $('sAcc').value;
+  save(); refreshAll(); toast('Datos guardados.');
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `tinta-laser-respaldo-${todayStr()}.json`;
+  a.click();
+  db.checks.backup = true; save(); refreshAll();
+}
+function importData(file){
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const d = JSON.parse(r.result);
+      if (!d.products || !d.movs) throw 0;
+      db = Object.assign(DEFAULT(), d); save(); refreshAll(); toast('Respaldo restaurado.');
+    }catch(e){ toast('Ese archivo no es un respaldo válido.'); }
+  };
+  r.readAsText(file);
+}
+
+/* ---------- 17. Asistente F29 ---------- */
+const F29_PASOS = ['Período','Ventas','Compras','Remanente y PPM','Resultado','Declarar en el SII'];
+const F29_INSTR = 'https://www.sii.cl/servicios_online/instrucciones_f29_20241112.pdf';
+let f29 = {step:0, ym:null, remAnt:0, ppm:0, retenc:0};
+function f29Ym(){
+  if (!f29.ym){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth()-1); f29.ym = d.toLocaleDateString('en-CA').slice(0,7); }
+  return f29.ym;
+}
+function f29Venc(ym){
+  const [y,m] = ym.split('-').map(Number);
+  return new Date(y, m, Math.min(28, db.f29Day)); // mes siguiente al período
+}
+function f29Calc(){
+  const ym = f29Ym();
+  let vN=0, vI=0, vC=0, vSinNum=0, cN=0, cI=0, cC=0;
+  db.movs.filter(m => m.date.startsWith(ym)).forEach(m => {
+    const neto = Math.round(m.amount/(1+IVA)), iva = m.amount - neto;
+    if (m.kind === 'venta'){ vN+=neto; vI+=iva; vC++; if (!m.num) vSinNum++; }
+    else { cN+=neto; cI+=iva; cC++; }
+  });
+  const credTotal = cI + (f29.remAnt||0);
+  const ivaPagar = Math.max(0, vI - credTotal);
+  const remSig = Math.max(0, credTotal - vI);
+  const ppm = f29.ppm||0, retenc = f29.retenc||0;
+  return {ym, vN, vI, vC, vSinNum, cN, cI, cC, credTotal, ivaPagar, remSig, ppm, retenc, total: ivaPagar + ppm + retenc};
+}
+function f29Declarada(ym){ return (db.f29hist||[]).some(h => h.ym === ym); }
+function renderF29(){
+  f29.step = Math.max(0, Math.min(F29_PASOS.length-1, f29.step));
+  $('f29Bar').style.width = (f29.step/(F29_PASOS.length-1)*100) + '%';
+  $('f29Label').textContent = `Paso ${f29.step+1} de ${F29_PASOS.length}: ${F29_PASOS[f29.step]}`;
+  const c = f29Calc();
+  const fns = [f29P0, f29P1, f29P2, f29P3, f29P4, f29P5];
+  const nav = `<div class="actions" style="margin-top:14px">
+      ${f29.step>0 ? '<button class="btn ghost" onclick="f29Go(-1)">← Atrás</button>' : '<span></span>'}
+      ${f29.step<F29_PASOS.length-1 ? '<button class="btn" onclick="f29Go(1)">Siguiente →</button>' : ''}
+    </div>`;
+  $('f29Box').innerHTML = `<div class="card">${fns[f29.step](c)}${nav}</div>`;
+}
+function f29Go(d){ f29.step += d; renderF29(); window.scrollTo({top:0,behavior:'smooth'}); }
+function f29SetMonth(v){ if (v){ f29.ym = v; } renderF29(); }
+function f29SetNum(k, v){ f29[k] = Math.max(0, Math.round(+v || 0)); renderF29(); }
+
+function f29P0(c){
+  const venc = f29Venc(c.ym);
+  const mes = new Date(c.ym+'-01T00:00').toLocaleDateString('es-CL',{month:'long', year:'numeric'});
+  const ya = f29Declarada(c.ym);
+  return `<h2>¿Qué mes declaras?</h2>
+    <p class="sub">El F29 declara el <b>mes anterior</b>. Si hoy es octubre, declaras septiembre.</p>
+    <label>Período a declarar</label>
+    <input type="month" value="${c.ym}" onchange="f29SetMonth(this.value)">
+    <div class="note-learn"><b>Vence:</b> ${fdate(venc)} ${venc.getFullYear()} · Día configurado: ${db.f29Day}. Confírmalo en sii.cl.</div>
+    <div class="result" style="margin-top:12px">
+      <div style="color:#c9d6d0;font-size:14px">Período elegido</div>
+      <div class="big" style="font-size:24px">${mes}</div>
+      <div style="color:#c9d6d0;font-size:14px">${ya ? 'Ya marcaste este período como declarado.' : 'Aún no declarado en la app.'}</div>
+    </div>
+    <p class="help" style="margin-top:10px">Usa el modo prueba si quieres practicar sin afectar tus datos reales.</p>`;
+}
+function f29P1(c){
+  return `<h2>Ventas del mes</h2>
+    <p class="sub">La app suma tus ventas anotadas en Movimientos. Revisa que estén todas.</p>
+    ${lineRow('Ventas netas (sin IVA)', c.vN, `${c.vC} documentos de venta anotados.`)}
+    ${lineRow('IVA de ventas (débito)', c.vI, 'Es el IVA que cobraste. Se declara como débito fiscal.')}
+    ${c.vSinNum ? `<div class="warn-box"><b>${c.vSinNum} venta(s) sin número de documento.</b> Complétalas en Movimientos antes de declarar.</div>` : '<div class="note-learn">Todas tus ventas tienen número de documento.</div>'}
+    ${check('fv1','Todas mis boletas y facturas emitidas están anotadas.')}
+    ${check('fv2','Los montos coinciden con mis documentos.')}`;
+}
+function f29P2(c){
+  return `<h2>Compras del mes</h2>
+    <p class="sub">Solo cuentan las compras con factura. Te dan derecho a descontar el IVA.</p>
+    ${lineRow('Compras netas (sin IVA)', c.cN, `${c.cC} compras anotadas.`)}
+    ${lineRow('IVA de compras (crédito)', c.cI, 'El IVA que pagaste en tus facturas. Se descuenta del débito.')}
+    <div class="note-learn"><b>Importante:</b> cada factura de proveedor debe tener su acuse de recibo en el SII. Sin acuse, el crédito puede no aceptarse.</div>
+    ${check('fc1','Todas mis facturas de proveedor están anotadas.')}
+    ${check('fc2','Di acuse de recibo a las facturas del mes en el SII.')}`;
+}
+function f29P3(c){
+  return `<h2>Remanente y PPM</h2>
+    <p class="sub">Estos datos vienen de tu declaración anterior. Si no tienes, déjalos en 0.</p>
+    <label>Remanente de crédito del mes anterior <span class="help">Es el saldo a favor que dejaste en tu F29 del mes pasado (código 77 de ese formulario). Se usa en el código 504.</span></label>
+    <input type="number" min="0" inputmode="numeric" value="${f29.remAnt||0}" onchange="f29SetNum('remAnt', this.value)">
+    <label>PPM del período <span class="help">Pago Provisional Mensual. Pregunta a tu contador si tu régimen lo paga. Si no, déjalo en 0.</span></label>
+    <input type="number" min="0" inputmode="numeric" value="${f29.ppm||0}" onchange="f29SetNum('ppm', this.value)">
+    <label>Retenciones a honorarios u otras <span class="help">Solo si tu empresa retiene a otros. Si no, déjalo en 0.</span></label>
+    <input type="number" min="0" inputmode="numeric" value="${f29.retenc||0}" onchange="f29SetNum('retenc', this.value)">
+    <div class="note-learn" style="margin-top:12px">Cambia un valor y la pantalla recalcula al instante.</div>`;
+}
+function f29P4(c){
+  return `<h2>Resultado</h2>
+    <p class="sub">Así queda tu declaración. Compara estos números con los que te muestre el SII.</p>
+    ${lineRow('IVA débito (ventas)', c.vI, 'Lo que cobraste.')}
+    ${lineRow('IVA crédito (compras + remanente anterior)', c.credTotal, 'Lo que puedes descontar.')}
+    ${lineRow('IVA a pagar', c.ivaPagar, 'Diferencia positiva entre débito y crédito.')}
+    ${lineRow('PPM', c.ppm, 'Solo si aplica a tu empresa.')}
+    ${lineRow('Retenciones', c.retenc, 'Solo si aplica.')}
+    <div class="result">
+      <div style="color:#c9d6d0;font-size:14px">${c.total>0 ? 'Total a pagar' : 'No hay pago este mes'}</div>
+      <div class="big">${fmt(c.total)}</div>
+      <div style="color:#c9d6d0;font-size:14px">${c.remSig>0 ? `Te queda un remanente de ${fmt(c.remSig)} para el mes siguiente.` : 'Sin remanente para el mes siguiente.'}</div>
+    </div>
+    <h3 style="margin-top:14px">Lo que escribes en el SII</h3>
+    <div class="note-learn" style="font-size:13px">Los códigos son los del instructivo oficial. Confirma los nombres en pantalla del SII antes de escribir.</div>
+    ${lineRow('Cód. 504 · Remanente anterior', c.remAnt||f29.remAnt||0, 'Crédito del mes anterior.')}
+    <div class="row"><div><b>Cód. 519 · Cantidad de facturas recibidas</b><div class="m">Cantidad, no monto.</div></div><div class="amt">${c.cC}</div></div>
+    ${lineRow('Cód. 89 · IVA determinado', c.ivaPagar, 'Si pagas, aquí va el IVA a pagar.')}
+    ${lineRow('Cód. 77 · Remanente para el mes siguiente', c.remSig, 'Solo si el crédito supera al débito.')}
+    ${lineRow('Cód. 151 · PPM', c.ppm, 'Solo si aplica.')}`;
+}
+function f29P5(c){
+  const hist = (db.f29hist||[]).some(h => h.ym === c.ym);
+  return `<h2>Declarar en el SII</h2>
+    <p class="sub">Estos pasos son generales. Los nombres exactos de las pantallas pueden cambiar, así que sigue lo que el SII te muestre.</p>
+    <ol class="steps">
+      <li>Entra a <a href="https://www.sii.cl" target="_blank" rel="noopener">sii.cl</a> con tu clave tributaria.</li>
+      <li>Busca la declaración de <b>Formulario 29</b> dentro de tu cuenta de empresa.</li>
+      <li>Selecciona el período ${c.ym}.</li>
+      <li>Revisa lo que el SII ya trae cargado desde tus documentos electrónicos.</li>
+      <li>Completa los campos que falten con los números de esta pantalla.</li>
+      <li>Compara el resultado con la sección "Resultado" de la app. Deben coincidir.</li>
+      <li>Confirma la declaración y luego paga el monto, antes del vencimiento.</li>
+      <li>Descarga y guarda el comprobante de declaración y de pago.</li>
+    </ol>
+    <div class="warn-box"><b>Errores comunes</b><ul>
+      <li>Declarar el mes equivocado.</li>
+      <li>Olvidar facturas de compra o no tener acuse de recibo.</li>
+      <li>Pagar un monto distinto al declarado.</li>
+      <li>Hacerlo después del vencimiento.</li>
+    </ul></div>
+    ${check('fd1','Revisé que el período sea el correcto.')}
+    ${check('fd2','Mis números coinciden con el resultado de la app.')}
+    ${check('fd3','Pagué el monto declarado.')}
+    <div class="actions">
+      <a class="btn ghost" href="${F29_INSTR}" target="_blank" rel="noopener">Instructivo oficial F29 ↗</a>
+      <a class="btn ghost" href="https://www.sii.cl" target="_blank" rel="noopener">Ir al SII ↗</a>
+    </div>
+    <div class="actions">
+      ${hist
+        ? '<span class="pill">Ya marcado como declarado</span>'
+        : `<button class="btn" onclick="f29Marcar()">Marcar como declarado</button>`}
+    </div>
+    <p class="help" style="margin-top:10px">Marcarlo solo guarda el registro en la app. No declara nada en el SII.</p>`;
+}
+function f29Marcar(){
+  const c = f29Calc();
+  if (!db.f29hist) db.f29hist = [];
+  db.f29hist.push({ym:c.ym, total:c.total, ivaPagar:c.ivaPagar, remSig:c.remSig, fecha:new Date().toLocaleDateString('en-CA')});
+  save(); toast('Declaración registrada en la app.'); renderF29();
+}
+
+/* ---------- 17b. F29 corregido con el instructivo oficial del SII (Formulario 29) ----------
+   Códigos usados (instructivo oficial, sii.cl):
+   503/502 facturas emitidas (cantidad / IVA) · 586/142 exentas (cantidad / neto)
+   519/520 facturas recibidas con crédito (cantidad / IVA crédito)
+   504 remanente de crédito del mes anterior · 89 IVA determinado a pagar
+   77 remanente para el mes siguiente · 563/115 ingresos brutos y tasa PPM
+   62 PPM determinado · 151 retención a honorarios · 91 resultado total a pagar
+   Los valores de la app son de apoyo: confirma siempre en la pantalla del SII. */
+function f29SetF(k, v){ f29[k] = Math.max(0, +v || 0); renderF29(); }
+function f29Calc(){
+  const ym = f29Ym();
+  let vN=0, vI=0, vC=0, vSinNum=0, cN=0, cI=0, cC=0, fEm=0, fIva=0;
+  db.movs.filter(m => m.date.startsWith(ym)).forEach(m => {
+    const neto = Math.round(m.amount/(1+IVA)), iva = m.amount - neto;
+    if (m.kind === 'venta'){
+      vN += neto; vI += iva; vC++;
+      if (!m.num) vSinNum++;
+      if (m.doc === 'Factura'){ fEm++; fIva += iva; }
+    } else { cN += neto; cI += iva; cC++; }
+  });
+  const exC = f29.exC||0, exN = f29.exN||0;
+  const credTotal = cI + (f29.remAnt||0);          // IVA crédito + remanente (504)
+  const diff = vI - credTotal;
+  const c89 = Math.max(0, diff);                    // IVA determinado a pagar
+  const c77 = Math.max(0, -diff);                   // remanente para el mes siguiente
+  const c62 = Math.max(0, Math.round((f29.ingBrutos||0) * (f29.tasa||0) / 100) - (f29.ppmCred||0));
+  const c151 = f29.honor||0;
+  const c91 = c89 + c62 + c151;
+  return {ym, vN, vI, vC, vSinNum, cN, cI, cC, fEm, fIva, exC, exN, credTotal, c89, c77, c62, c151, c91};
+}
+function f29P1(c){
+  return `<h2>Ventas del mes</h2>
+    <p class="sub">La app suma tus ventas anotadas en Movimientos. Revisa que estén todas.</p>
+    ${lineRow('Ventas netas con IVA (boletas y facturas)', c.vN, `${c.vC} documentos de venta anotados.`)}
+    ${lineRow('IVA de ventas (débito)', c.vI, 'Lo que cobraste. Es el débito fiscal.')}
+    <div class="row"><div><b>Cód. 503 · Cantidad de facturas emitidas</b><div class="m">Solo facturas. Las boletas electrónicas las informa el SII.</div></div><div class="amt">${c.fEm}</div></div>
+    ${lineRow('Cód. 502 · IVA de las facturas emitidas', c.fIva, 'IVA recargado en tus facturas.')}
+    <label>Ventas exentas o no afectas (opcional) <span class="help">Cantidad de documentos (Cód. 586). Si no tienes, déjalo en 0.</span></label>
+    <input type="number" min="0" inputmode="numeric" value="${c.exC}" onchange="f29SetNum('exC', this.value)">
+    <label>Monto neto de esas ventas (Cód. 142)</label>
+    <input type="number" min="0" inputmode="numeric" value="${c.exN}" onchange="f29SetNum('exN', this.value)">
+    ${c.vSinNum ? `<div class="warn-box"><b>${c.vSinNum} venta(s) sin número de documento.</b> Complétalas en Movimientos antes de declarar.</div>` : '<div class="note-learn">Todas tus ventas tienen número de documento.</div>'}
+    ${check('fv1','Todas mis boletas y facturas emitidas están anotadas.')}
+    ${check('fv2','Los montos coinciden con mis documentos.')}`;
+}
+function f29P2(c){
+  return `<h2>Compras del mes</h2>
+    <p class="sub">Solo cuentan las facturas de compra. Te dan derecho a descontar el IVA.</p>
+    <div class="row"><div><b>Cód. 519 · Cantidad de facturas recibidas</b><div class="m">Cantidad, no monto.</div></div><div class="amt">${c.cC}</div></div>
+    ${lineRow('Cód. 520 · IVA crédito de esas facturas', c.cI, 'El IVA que pagaste en tus compras con factura.')}
+    <div class="note-learn"><b>Importante:</b> cada factura de proveedor debe tener su acuse de recibo en el SII. Sin acuse, el crédito puede no aceptarse.</div>
+    ${check('fc1','Todas mis facturas de proveedor están anotadas.')}
+    ${check('fc2','Di acuse de recibo a las facturas del mes en el SII.')}`;
+}
+function f29P3(c){
+  return `<h2>Remanente, PPM y retenciones</h2>
+    <p class="sub">Si no aplica, déjalo en 0. Tu contador confirma qué corresponde a tu régimen.</p>
+    <label>Cód. 504 · Remanente de crédito del mes anterior <span class="help">Viene del código 77 de tu F29 del mes pasado.</span></label>
+    <input type="number" min="0" inputmode="numeric" value="${f29.remAnt||0}" onchange="f29SetNum('remAnt', this.value)">
+    <label>Cód. 563 · Ingresos brutos del mes para PPM <span class="help">Solo si tu régimen paga pagos provisionales mensuales.</span></label>
+    <input type="number" min="0" inputmode="numeric" value="${f29.ingBrutos||0}" onchange="f29SetNum('ingBrutos', this.value)">
+    <label>Cód. 115 · Tasa de PPM en % <span class="help">La da tu contador o el SII según tu situación. Puede tener decimales, ej: 0,25.</span></label>
+    <input type="number" min="0" step="0.01" inputmode="decimal" value="${f29.tasa||0}" onchange="f29SetF('tasa', this.value)">
+    <label>Cód. 151 · Retención a honorarios del mes <span class="help">Si pagaste honorarios, retienes un porcentaje. Vence el día 12 del mes siguiente.</span></label>
+    <input type="number" min="0" inputmode="numeric" value="${f29.honor||0}" onchange="f29SetNum('honor', this.value)">
+    <div class="note-learn" style="margin-top:12px">Cambia un valor y la pantalla recalcula al instante.</div>`;
+}
+function f29P4(c){
+  return `<h2>Resultado</h2>
+    <p class="sub">Estos son los códigos que escribes en el SII. Compara cada número con la pantalla del SII.</p>
+    ${lineRow('Cód. 89 · IVA determinado a pagar', c.c89, 'Solo si tus débitos superan tus créditos.')}
+    ${lineRow('Cód. 77 · Remanente para el mes siguiente', c.c77, 'Solo si tus créditos superan tus débitos.')}
+    ${lineRow('Cód. 62 · PPM determinado', c.c62, 'Solo si tu régimen paga PPM.')}
+    ${lineRow('Cód. 151 · Retención a honorarios', c.c151, 'Lo que retuviste a quienes te prestaron servicios.')}
+    <div class="result">
+      <div style="color:#c9d6d0;font-size:14px">Cód. 91 · Total a pagar</div>
+      <div class="big">${fmt(c.c91)}</div>
+      <div style="color:#c9d6d0;font-size:14px">${c.c77>0 ? `Te queda remanente de ${fmt(c.c77)} para el mes siguiente.` : 'Sin remanente para el mes siguiente.'}</div>
+    </div>
+    <div class="row"><div><b>Cód. 504 · Remanente usado del mes anterior</b></div><div class="amt">${fmt(f29.remAnt||0)}</div></div>
+    <div class="row"><div><b>Cód. 519 · Facturas recibidas</b><div class="m">Cantidad</div></div><div class="amt">${c.cC}</div></div>
+    <div class="row"><div><b>Cód. 520 · IVA crédito</b></div><div class="amt">${fmt(c.cI)}</div></div>`;
+}
+function f29P5(c){
+  const hist = (db.f29hist||[]).some(h => h.ym === c.ym);
+  return `<h2>Declarar en el SII</h2>
+    <p class="sub">Los nombres de pantalla pueden cambiar. Sigue lo que el SII te muestre y compara con esta app.</p>
+    <ol class="steps">
+      <li>Entra a <a href="https://www.sii.cl" target="_blank" rel="noopener">sii.cl</a> con tu clave tributaria de empresa.</li>
+      <li>Abre la declaración de <b>Formulario 29</b> y elige el período <b>${c.ym}</b>.</li>
+      <li>Revisa lo que el SII ya trae cargado desde tus documentos electrónicos.</li>
+      <li>Completa los campos que faltan con los códigos de la pantalla anterior.</li>
+      <li>Verifica que el Cód. 91 sea igual al total de la app.</li>
+      <li>Presenta la declaración: solo se presenta <b>una</b> por período.</li>
+      <li>Paga el monto del Cód. 91 antes del vencimiento.</li>
+      <li>Descarga y guarda el comprobante de declaración y de pago.</li>
+    </ol>
+    <div class="warn-box"><b>Errores que hacen observar la declaración</b><ul>
+      <li>Declarar el período equivocado.</li>
+      <li>Olvidar facturas de compra o no tener su acuse de recibo.</li>
+      <li>Pagar un monto distinto al declarado.</li>
+      <li>Presentar fuera de plazo: hay multa e intereses.</li>
+    </ul></div>
+    <div class="note-learn"><b>Plazo de la retención a honorarios (Cód. 151):</b> día 12 del mes siguiente, según el artículo 79 de la Ley de la Renta. Esa fecha no se mueve.</div>
+    ${check('fd1','Revisé que el período sea el correcto.')}
+    ${check('fd2','El Cód. 91 coincide con el total de la app.')}
+    ${check('fd3','Pagué el monto declarado.')}
+    <div class="actions">
+      <a class="btn ghost" href="${F29_INSTR}" target="_blank" rel="noopener">Instructivo oficial F29 ↗</a>
+      <a class="btn ghost" href="https://www.sii.cl" target="_blank" rel="noopener">Ir al SII ↗</a>
+    </div>
+    <div class="actions">
+      ${hist ? '<span class="pill">Ya marcado como declarado</span>' : '<button class="btn" onclick="f29Marcar()">Marcar como declarado</button>'}
+    </div>
+    <p class="help" style="margin-top:10px">Marcarlo solo guarda el registro en la app. No declara nada en el SII.</p>`;
+}
+function f29Marcar(){
+  const c = f29Calc();
+  if (!db.f29hist) db.f29hist = [];
+  db.f29hist.push({ym:c.ym, total:c.c91, iva89:c.c89, remSig:c.c77, fecha:new Date().toLocaleDateString('en-CA')});
+  save(); toast('Declaración registrada en la app.'); renderF29();
+}
+
+/* ---------- 14. Modo prueba ---------- */
+function applyMode(){
+  document.body.classList.toggle('prueba', mode === 'prueba');
+  const b = $('modeBtn'); if (b) b.textContent = mode === 'prueba' ? 'Salir del modo prueba' : 'Entrar al modo prueba';
+}
+function toggleMode(){
+  if (mode === 'real'){
+    if (!confirm('Vas a entrar al MODO PRUEBA. Verás datos de ejemplo y nada se envía a ningún lugar. Tus datos reales quedan guardados sin cambios. ¿Entrar?')) return;
+    mode = 'prueba';
+  } else mode = 'real';
+  localStorage.setItem('tl-mode', mode);
+  db = loadMode(mode);
+  applyMode(); refreshAll();
+  toast(mode === 'prueba' ? 'Modo prueba activado.' : 'Volviste a tus datos reales.');
+}
+
+/* ---------- 15. Guías de trámites ---------- */
+const TRAMITES = [
+  {id:'f29', t:'Formulario 29 (IVA mensual)', cuando:'Cada mes',
+   que:'Declaras el IVA que cobraste en tus ventas y el IVA que pagaste en tus compras con documento. La diferencia es lo que pagas (o el crédito a favor).',
+   plazo:'Vence el día que te indique el SII para tu caso (la app tiene el día configurado en Fechas). Confirma siempre la fecha en sii.cl.',
+   pasos:['Entra a sii.cl con tu clave tributaria.','Busca "Formulario 29" en el menú de declaraciones.','Elige el período: es el mes anterior al que declaras.','Revisa las ventas netas, el IVA de ventas, las compras y el IVA de compras. Usa la pestaña Movimientos de la app como respaldo.','Confirma el resultado y paga antes del vencimiento.','Guarda el comprobante de la declaración y del pago.'],
+   errores:['Olvidar compras con factura: te cuesta más IVA.','Declarar el mes equivocado.','Pagar fuera de plazo: hay multa e intereses.','No revisar el resultado antes de confirmar.'],
+   url:'https://www.sii.cl', sim:'f29'},
+  {id:'boleta', t:'Emitir una boleta electrónica', cuando:'Cada venta a consumidor final',
+   que:'Es el comprobante que das cuando vendes a una persona. Lleva el monto total con IVA incluido.',
+   plazo:'Se emite al momento de la venta.',
+   pasos:['Emite la boleta en el portal del SII o en tu sistema certificado (por ejemplo LibreDTE).','Ingresa el detalle del producto y el monto total con IVA.','Confirma y entrega la boleta al cliente o envíasela.','Anota la venta en Movimientos con el número de boleta.'],
+   errores:['Anotar el monto sin IVA como si fuera el total.','Vender sin emitir boleta.','No anotar el número de boleta en la app.'],
+   url:'https://www.sii.cl', sim:'boleta'},
+  {id:'acuse', t:'Acuse de recibo de facturas de proveedor', cuando:'Cada factura que recibes',
+   que:'Confirmas en el SII que recibiste una factura de tu proveedor. Así el IVA de esa compra queda a tu favor.',
+   plazo:'Tienes 8 días corridos desde que recibes la factura.',
+   pasos:['Entra a sii.cl con tu clave tributaria.','Busca el registro de compras y ventas o el acuse de recibo.','Revisa cada factura recibida.','Acepta la que corresponde o reclama si no es correcta.'],
+   errores:['Dejar pasar los 8 días.','Aceptar una factura que no recibiste o que no corresponde a la empresa.'],
+   url:'https://www.sii.cl', sim:null},
+  {id:'patente', t:'Patente municipal', cuando:'Dos veces al año',
+   que:'Es el permiso municipal para funcionar. Se paga en el municipio.',
+   plazo:'Confirma las fechas con la Municipalidad de Calama. Suelen ser enero y julio.',
+   pasos:['Consulta en la Municipalidad de Calama el monto y las fechas.','Paga por el canal que te indiquen.','Guarda el comprobante.'],
+   errores:['Olvidar el segundo semestre.','Pagar sin confirmar el monto.'],
+   url:null, sim:null},
+  {id:'ddjj', t:'Declaraciones juradas (DDJJ)', cuando:'Una vez al año',
+   que:'Informas al SII retiros, honorarios y otros datos de la empresa. Tu contador te ayuda a prepararlas.',
+   plazo:'Febrero y marzo, según el calendario del SII.',
+   pasos:['Reúne tus retiros y honorarios del año.','Revisa con tu contador qué declaraciones aplican.','Presenta en sii.cl con tu clave tributaria.'],
+   errores:['Mezclar gastos personales con los de la empresa.','No declarar retiros.'],
+   url:'https://www.sii.cl', sim:null},
+  {id:'f22', t:'Formulario 22 (renta anual)', cuando:'Una vez al año',
+   que:'Es tu declaración anual de renta. Resume el resultado del año de la empresa.',
+   plazo:'Abril, según el calendario del SII.',
+   pasos:['Prepara el balance del año con tu contador.','Entra a sii.cl y busca el Formulario 22.','Completa con los datos del balance y revisa antes de enviar.'],
+   errores:['Declarar sin cuadrar con los F29 del año.','Enviar sin revisión del contador.'],
+   url:'https://www.sii.cl', sim:null},
+  {id:'sercotec', t:'Rendición de gastos Sercotec', cuando:'Según tu convenio',
+   que:'Demuestras a Sercotec en qué usaste el capital semilla. Cada gasto necesita su respaldo.',
+   plazo:'Según las fechas de tu convenio. Revísalas en tus documentos del proyecto.',
+   pasos:['Guarda cada factura o boleta a nombre de la empresa.','Anota cada gasto en la pestaña Sercotec de la app.','Verifica que cada gasto esté dentro de lo aprobado.','Prepara la rendición con los documentos ordenados.'],
+   errores:['Gastos sin documento a nombre de la empresa.','Gastos fuera de lo aprobado en el proyecto.','Pagar en efectivo sin respaldo.'],
+   url:'https://www.sercotec.cl', sim:'sercotec'},
+  {id:'sociedad', t:'Certificado de estatuto de la empresa', cuando:'Cuando un banco o trámite lo pida',
+   que:'Prueba oficialmente que tu empresa existe y cuál es su estatuto.',
+   plazo:'Sin plazo. Usa siempre el certificado oficial, no un borrador.',
+   pasos:['Entra a registrodeempresasysociedades.cl.','Ingresa el código de verificación (CVE) del certificado.','Confirma que el documento dice "Certificado de estatuto actualizado".'],
+   errores:['Usar el PDF de borrador como si fuera oficial.'],
+   url:'https://www.registrodeempresasysociedades.cl', sim:null}
+];
+function renderTramites(){
+  $('tramList').innerHTML = TRAMITES.map(t => `
+    <details class="card tram">
+      <summary><b>${t.t}</b><span class="pill">${t.cuando}</span></summary>
+      <div style="margin-top:12px">
+        <p class="sub" style="margin-bottom:8px">${t.que}</p>
+        <div class="note-learn"><b>Plazo:</b> ${t.plazo}</div>
+        <h3>Pasos</h3>
+        <ol class="steps">${t.pasos.map(p => `<li>${p}</li>`).join('')}</ol>
+        <div class="warn-box"><b>Errores comunes</b><ul>${t.errores.map(e => `<li>${e}</li>`).join('')}</ul></div>
+        <div class="actions">
+          ${t.sim ? `<button class="btn ember" onclick="practicar('${t.id}')">Practicar sin riesgo</button>` : ''}
+          ${t.url ? `<a class="btn ghost" href="${t.url}" target="_blank" rel="noopener">Ir al sitio oficial ↗</a>` : ''}
+        </div>
+        <p class="help" style="margin-top:10px">Los enlaces van a sitios oficiales. Confirma siempre la información en el sitio antes de actuar.</p>
+      </div>
+    </details>`).join('');
+}
+
+/* ---------- 16. Práctica (simuladores) ---------- */
+let practId = null;
+function practicar(id){
+  if (mode !== 'prueba'){ mode = 'prueba'; localStorage.setItem('tl-mode','prueba'); db = loadMode('prueba'); applyMode(); refreshAll(); }
+  practId = id; go('practica');
+}
+function renderPractica(){
+  const box = $('practBox');
+  if (!practId){ box.innerHTML = '<div class="empty">Elige un trámite en Trámites y pulsa "Practicar sin riesgo".</div>'; return; }
+  const t = TRAMITES.find(x => x.id === practId);
+  const sims = {f29:simF29, boleta:simBoleta, sercotec:simSercotec};
+  box.innerHTML = sims[t.sim] ? sims[t.sim](t) : '';
+}
+const lineRow = (label, value, help) => `
+  <div class="row"><div><b>${label}</b><div class="m">${help}</div></div><div class="amt">${fmt(value)}</div></div>`;
+const check = (id, text) => `<label class="check-li"><input type="checkbox" id="${id}"><span>${text}</span></label>`;
+
+function simF29(t){
+  const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1);
+  const ym = d.toLocaleDateString('en-CA').slice(0,7);
+  let vN=0, vI=0, cN=0, cI=0;
+  db.movs.filter(m => m.date.startsWith(ym)).forEach(m => {
+    const neto = Math.round(m.amount / (1 + IVA)), iva = m.amount - neto;
+    if (m.kind === 'venta'){ vN += neto; vI += iva; } else { cN += neto; cI += iva; }
+  });
+  const res = vI - cI;
+  const mes = d.toLocaleDateString('es-CL', {month:'long', year:'numeric'});
+  return `
+  <div class="card">
+    <span class="practice-tag">SIMULACIÓN</span>
+    <h2 style="margin-top:8px">F29 de ${mes}</h2>
+    <p class="sub">Así se calcula el IVA. Los números salen de tus movimientos de prueba.</p>
+    ${lineRow('Ventas netas (sin IVA)', vN, 'Tus ventas sin el IVA. Ejemplo: una boleta de $11.900 tiene $10.000 neto y $1.900 de IVA.')}
+    ${lineRow('IVA de ventas', vI, 'El IVA que cobraste. Se debe al fisco.')}
+    ${lineRow('Compras netas (sin IVA)', cN, 'Tus compras con documento sin el IVA.')}
+    ${lineRow('IVA de compras', cI, 'El IVA que pagaste en compras con factura. Lo puedes descontar.')}
+    <div class="result">
+      <div style="color:#c9d6d0;font-size:14px">${res >= 0 ? 'Resultado a pagar' : 'Crédito a favor para el mes siguiente'}</div>
+      <div class="big">${fmt(Math.abs(res))}</div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Antes del trámite real, revisa</h2>
+    ${check('f1','Elegí el mes correcto (el anterior).')}
+    ${check('f2','Todas mis facturas de compra están anotadas.')}
+    ${check('f3','El IVA de ventas coincide con mis boletas.')}
+    ${check('f4','Conozco la fecha de vencimiento en sii.cl.')}
+    <div class="actions"><a class="btn" href="${t.url}" target="_blank" rel="noopener">Ir al SII ↗</a></div>
+  </div>`;
+}
+
+function simBoleta(t){
+  return `
+  <div class="card">
+    <span class="practice-tag">SIMULACIÓN</span>
+    <h2 style="margin-top:8px">Boleta de prueba</h2>
+    <p class="sub">Escribe el monto total que paga el cliente. La boleta siempre lleva el IVA incluido.</p>
+    <label>Detalle del producto</label>
+    <input id="bDet" placeholder="Ej: 2 llaveros acrílicos">
+    <label>Monto total que paga el cliente (con IVA)</label>
+    <input id="bMonto" type="number" min="0" inputmode="numeric" oninput="bCalc()" placeholder="$">
+    <div class="split light" style="margin-top:12px">
+      <div class="light"><span>Neto</span><b id="bNeto">$0</b></div>
+      <div class="light"><span>IVA 19%</span><b id="bIva">$0</b></div>
+    </div>
+    <p class="help" id="bTip" style="margin-top:10px"></p>
+    <div class="actions"><button class="btn" onclick="bRegistrar()">Registrar en prueba</button></div>
+    <div class="msg" id="bMsg" style="color:var(--ok)"></div>
+  </div>
+  <div class="card">
+    <h2>Lo que lleva una boleta</h2>
+    ${check('b1','Fecha de la venta.')}
+    ${check('b2','Detalle claro de lo que vendiste.')}
+    ${check('b3','Monto total con IVA incluido.')}
+    ${check('b4','Número de boleta anotado en la app.')}
+    <div class="actions"><a class="btn ghost" href="${t.url}" target="_blank" rel="noopener">Ir al SII ↗</a></div>
+  </div>`;
+}
+function bCalc(){
+  const total = Math.round(+$('bMonto').value || 0);
+  const neto = Math.round(total / (1 + IVA));
+  $('bNeto').textContent = fmt(neto);
+  $('bIva').textContent = fmt(total - neto);
+  $('bTip').textContent = total ? 'Ejemplo: $11.900 con IVA = $10.000 neto + $1.900 de IVA.' : 'Escribe el monto para ver cómo se divide.';
+}
+function bRegistrar(){
+  const total = Math.round(+$('bMonto').value || 0);
+  if (!total){ $('bMsg').style.color = 'var(--bad)'; $('bMsg').textContent = 'Escribe el monto primero.'; return; }
+  const n = db.movs.filter(m => m.kind === 'venta').length + 1;
+  db.movs.push({id:uid(), kind:'venta', date:new Date().toLocaleDateString('en-CA'), doc:'Boleta', num:'P-' + String(n).padStart(3,'0'), desc:'(prueba) ' + ($('bDet').value.trim() || 'Venta'), amount:total});
+  save(); $('bMsg').style.color = 'var(--ok)'; $('bMsg').textContent = 'Boleta de prueba registrada en Movimientos.';
+  toast('Registrada en prueba.');
+}
+
+function simSercotec(t){
+  const s = db.sercotec;
+  const rend = s.gastos.reduce((a,g) => a + g.neto, 0);
+  const filas = s.gastos.map(g => {
+    const ok = [!!g.doc, !!g.prov, g.neto > 0, !!g.resp];
+    const todo = ok.every(Boolean);
+    return `<div class="row"><div><b>${esc(g.cat)}</b>
+      <div class="m">Documento: ${g.doc ? `<span class="ok">✓ ${esc(g.doc)}</span>` : '<span class="no">✗ falta</span>'}
+      · Proveedor: ${g.prov ? '<span class="ok">✓</span>' : '<span class="no">✗</span>'}
+      · Neto: ${g.neto > 0 ? '<span class="ok">✓</span>' : '<span class="no">✗</span>'}
+      · Respaldo: ${g.resp ? '<span class="ok">✓</span>' : '<span class="no">✗</span>'}</div></div>
+      <div class="amt">${todo ? '<span class="pill">Lista</span>' : '<span class="pill warn">Revisar</span>'}</div></div>`;
+  }).join('') || '<div class="empty">No hay gastos de prueba. Agrega uno en Sercotec para practicar.</div>';
+  return `
+  <div class="card">
+    <span class="practice-tag">SIMULACIÓN</span>
+    <h2 style="margin-top:8px">Rendición de práctica</h2>
+    <p class="sub">Cada gasto debe tener documento, proveedor, monto neto y respaldo guardado.</p>
+    ${lineRow('Total rendido (neto)', rend, 'Suma de los gastos de prueba.')}
+    ${lineRow('Saldo del presupuesto', s.presupuesto - rend, 'Lo que te queda de tu convenio.')}
+    <h3 style="margin-top:12px">Revisión por gasto</h3>
+    ${filas}
+  </div>
+  <div class="card">
+    <h2>Antes de rendir de verdad</h2>
+    ${check('s1','Cada gasto tiene factura o boleta a nombre de la empresa.')}
+    ${check('s2','Los gastos corresponden a lo aprobado en el convenio.')}
+    ${check('s3','Guardé copias de todos los respaldos.')}
+    ${check('s4','Revisé las fechas de rendición en mi convenio.')}
+    <div class="actions"><a class="btn" href="${t.url}" target="_blank" rel="noopener">Ir a Sercotec ↗</a></div>
+  </div>`;
+}
+
+/* ---------- 14b. Orquestación ---------- */
+const VIEWS = {
+  hoy:renderHoy, cotizar:renderCotizar, pedidos:renderPedidos, precios:renderPrecios,
+  mov:renderMov, inventario:renderInventario, sercotec:renderSercotec, fechas:renderFechas, ajustes:renderAjustes
+};
+Object.assign(VIEWS, {tramites:renderTramites, practica:renderPractica, f29:renderF29});
+
+/* ---------- 18. Gráfico IVA (Chart.js, MIT) y accesibilidad ---------- */
+let ivaChart = null;
+function drawIvaChart(){
+  const canvas = $('ivaChart'); if (!canvas) return;
+  const labels = [], deb = [], cre = [];
+  for (let i = 5; i >= 0; i--){
+    const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i);
+    const ym = d.toLocaleDateString('en-CA').slice(0,7);
+    labels.push(d.toLocaleDateString('es-CL', {month:'short'}));
+    let dv = 0, cv = 0;
+    db.movs.filter(m => m.date.startsWith(ym)).forEach(m => {
+      const iva = m.amount - Math.round(m.amount/(1+IVA));
+      if (m.kind === 'venta') dv += iva; else cv += iva;
+    });
+    deb.push(dv); cre.push(cv);
+  }
+  if (!window.Chart){ $('ivaChartFallback').textContent = 'El gráfico necesita internet para cargarse. Los números de arriba siguen siendo válidos.'; return; }
+  $('ivaChartFallback').textContent = '';
+  if (ivaChart) ivaChart.destroy();
+  ivaChart = new Chart(canvas, {
+    type:'bar',
+    data:{labels, datasets:[
+      {label:'IVA de ventas', data:deb, backgroundColor:'#2f6b5a', borderRadius:6},
+      {label:'IVA de compras', data:cre, backgroundColor:'#e5672f', borderRadius:6}
+    ]},
+    options:{responsive:true, plugins:{legend:{position:'bottom'}}, scales:{y:{ticks:{callback:v => '$' + Number(v).toLocaleString('es-CL')}}}}
+  });
+}
+Object.assign(VIEWS, {mov: () => { renderMov(); drawIvaChart(); }});
+function toggleBig(){
+  const on = document.body.classList.toggle('bigtext');
+  localStorage.setItem('tl-big', on ? '1' : '0');
+  $('bigBtn').textContent = on ? 'Volver a letra normal' : 'Activar letra grande';
+}
+if (localStorage.getItem('tl-big') === '1') document.body.classList.add('bigtext');
+
+/* ---------- 18b. Acuse, material y resumen para contador ---------- */
+function fillItemSel(){
+  const sel = $('mItemSel'); if (!sel) return;
+  const isCompra = db.kind === 'compra';
+  $('compraExtra').style.display = isCompra ? '' : 'none';
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">No</option>' + db.items.map(i => `<option value="${i.id}">${esc(i.name)}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+function setKind(k){
+  db.kind = k; save();
+  if ($('mov').classList.contains('on')){ renderMov(); fillItemSel(); }
+}
+Object.assign(VIEWS, {mov: () => { renderMov(); fillItemSel(); drawIvaChart(); }});
+function toggleAcuse(id){
+  const m = db.movs.find(x => x.id === id); if (!m) return;
+  m.acuse = !m.acuse; save(); refreshAll();
+  toast(m.acuse ? 'Acuse marcado como hecho.' : 'Acuse marcado como pendiente.');
+}
+function exportCSV(){
+  const ym = todayStr().slice(0,7);
+  const rows = [['Fecha','Tipo','Documento','Número','Descripción','Neto','IVA','Total','Acuse SII']];
+  db.movs.filter(m => m.date.startsWith(ym)).sort((a,b) => a.date.localeCompare(b.date)).forEach(m => {
+    const neto = Math.round(m.amount/(1+IVA)), iva = m.amount - neto;
+    rows.push([m.date, m.kind==='venta'?'Venta':'Compra', m.doc, m.num, m.desc, neto, iva, m.amount, m.kind==='compra' ? (m.acuse?'Sí':'No') : '']);
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(';')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8'}));
+  a.download = `movimientos-${ym}.csv`; a.click();
+  toast('Resumen descargado. Envíalo a tu contador.');
+}
+
+/* ---------- 18c. Sercotec por categoría y conciliación de cartola ---------- */
+const SER_CATS = ['Máquina láser','Equipamiento complementario','Materiales','Software y herramientas','Marketing','Otro'];
+function renderSerCats(){
+  const box = $('serCats'); if (!box) return;
+  const s = db.sercotec; s.cats = s.cats || {};
+  const gastoCat = c => s.gastos.filter(g => g.cat === c).reduce((a,g) => a + g.neto, 0);
+  const dr = s.fechaRend ? dayDiff(new Date(s.fechaRend+'T00:00')) : null;
+  box.innerHTML = `<div class="card"><h2>Presupuesto por categoría</h2>
+    <p class="sub">Pon cuánto aprobaste en cada categoría. La app avisa si te pasas.</p>
+    ${SER_CATS.map(c => {
+      const pre = s.cats[c] || 0, gas = gastoCat(c);
+      const pct = pre ? Math.min(100, gas/pre*100) : 0, over = pre && gas > pre;
+      return `<div class="row" style="display:block">
+        <div style="display:flex;justify-content:space-between;gap:8px"><b>${c}</b><span class="m">${fmt(gas)} de ${pre ? fmt(pre) : 'sin presupuesto'}</span></div>
+        <input type="number" min="0" inputmode="numeric" value="${pre||''}" placeholder="Presupuesto aprobado" onchange="setSerCat('${c}', this.value)" style="margin-top:6px">
+        <div class="bar"><i style="width:${pct}%;${over?'background:var(--bad)':''}"></i></div>
+        ${over ? '<div class="help" style="color:var(--bad)">Te pasaste de lo aprobado en esta categoría.</div>' : ''}
+      </div>`;
+    }).join('')}
+    <label>Fecha de rendición según tu convenio</label>
+    <input type="date" value="${s.fechaRend||''}" onchange="setRendDate(this.value)">
+    <div class="help">${dr === null ? 'Ingresa la fecha para recibir avisos.' : dr < 0 ? 'La fecha ya pasó. Revisa tu convenio.' : `Faltan ${dr} días.`}</div>
+  </div>`;
+}
+function setSerCat(c, v){ db.sercotec.cats = db.sercotec.cats || {}; db.sercotec.cats[c] = Math.max(0, Math.round(+v || 0)); save(); renderSerCats(); }
+function setRendDate(v){ db.sercotec.fechaRend = v; save(); renderSerCats(); refreshAll(); }
+Object.assign(VIEWS, {sercotec: () => { renderSercotec(); renderSerCats(); }});
+
+function parseMonto(s){
+  if (s == null) return 0;
+  const t = String(s).replace(/[$\s]/g,'').replace(/\./g,'').replace(',','.');
+  const n = parseFloat(t); return isNaN(n) ? 0 : Math.round(Math.abs(n));
+}
+function parseFecha(s){
+  const t = String(s || '').trim();
+  let m = t.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})/);
+  if (m){ const y = m[3].length === 2 ? '20' + m[3] : m[3]; return `${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`; }
+  m = t.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? t.slice(0,10) : '';
+}
+function importCartola(file){
+  const out = $('bankOut'); if (!file) return;
+  if (!window.Papa){ out.innerHTML = '<div class="warn-box">Esta función necesita internet la primera vez que la usas.</div>'; return; }
+  Papa.parse(file, {header:true, skipEmptyLines:true, complete: res => {
+    const f = res.meta.fields || [];
+    const dk = f.find(x => /fecha/i.test(x));
+    const mk = f.find(x => /cargo|abono|monto|importe|valor/i.test(x));
+    const dsk = f.find(x => /descrip|detalle|glosa|concepto/i.test(x));
+    if (!dk || !mk){ out.innerHTML = '<div class="warn-box">No reconocí las columnas de fecha y monto. Revisa el encabezado del archivo o pide a tu banco una cartola en CSV.</div>'; return; }
+    const rows = res.data.map(r => ({fecha:parseFecha(r[dk]), monto:parseMonto(r[mk]), desc:dsk ? r[dsk] : ''})).filter(r => r.fecha && r.monto);
+    let ok = 0; const pend = [];
+    rows.forEach(r => {
+      const hit = db.movs.some(m => m.amount === r.monto && Math.abs(new Date(m.date+'T00:00') - new Date(r.fecha+'T00:00')) <= 3*864e5);
+      hit ? ok++ : pend.push(r);
+    });
+    out.innerHTML = `<div class="note-learn"><b>${ok}</b> movimientos de la cartola coinciden con la app. <b>${pend.length}</b> no están anotados.</div>`
+      + pend.slice(0,20).map(r => `<div class="row"><div><b>${esc(r.desc) || 'Movimiento'}</b><div class="m">${r.fecha}</div></div><div class="amt">${fmt(r.monto)}</div></div>`).join('')
+      + (pend.length > 20 ? `<p class="help">Mostrando 20 de ${pend.length}.</p>` : '')
+      + (pend.length ? '<p class="help">Si son ventas o compras de la empresa, regístralas en Movimientos.</p>' : '');
+  }});
+}
+
+/* ---------- 18d. Calendario con acciones directas ---------- */
+let fcal = null;
+function obligaciones(){
+  const L = [];
+  const hoy = new Date(new Date().toDateString());
+  // F29 de los últimos y próximos períodos
+  for (let i = -1; i <= 1; i++){
+    const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1 + i);
+    const ym = d.toLocaleDateString('en-CA').slice(0,7);
+    const done = (db.f29hist||[]).some(h => h.ym === ym);
+    L.push({date: f29Venc(ym), title:`F29 del período ${ym}`, sub: done ? 'Ya declarado' : 'Declarar y pagar', go:'f29', done, tipo:'F29'});
+  }
+  // Retención a honorarios: día 12 de cada mes (Cód. 151)
+  for (let i = 0; i < 3; i++){
+    const d = new Date(); d.setDate(12); d.setMonth(d.getMonth() + i);
+    if (i === 0 && d < hoy) continue;
+    L.push({date:d, title:'Retención a honorarios (Cód. 151)', sub:'Día 12. Solo si pagaste honorarios', go:'f29', done:false, tipo:'Honorarios'});
+  }
+  // Acuse de facturas recibidas sin acuse marcado
+  db.movs.filter(m => m.kind === 'compra' && !m.acuse).forEach(m => {
+    L.push({date:new Date(new Date(m.date+'T00:00').getTime() + 8*864e5), title:`Acuse: ${m.desc || m.num || 'factura'}`, sub:'Marca el acuse en el SII y en la app', go:'mov', done:false, tipo:'Acuse'});
+  });
+  // Rendición Sercotec
+  if (db.sercotec && db.sercotec.fechaRend)
+    L.push({date:new Date(db.sercotec.fechaRend+'T00:00'), title:'Rendición Sercotec', sub:'Revisa respaldos y montos por categoría', go:'sercotec', done:false, tipo:'Sercotec'});
+  // Orientativos del año: confirmar siempre en sii.cl o con la municipalidad
+  const y = hoy.getFullYear();
+  [[0,31,'Patente municipal (1er semestre)','Confirma la fecha con la Municipalidad de Calama','tramites'],
+   [1,28,'Declaración jurada (DDJJ)','Fecha orientativa: confirma en sii.cl','tramites'],
+   [3,30,'Formulario 22 (renta anual)','Fecha orientativa: confirma en sii.cl','tramites'],
+   [6,31,'Patente municipal (2do semestre)','Confirma la fecha con la Municipalidad de Calama','tramites']
+  ].forEach(([mo,dd,t,s,g]) => {
+    const d = new Date(y, mo, dd);
+    if (d >= hoy) L.push({date:d, title:t, sub:s, go:g, done:false, tipo:'Anual'});
+  });
+  return L;
+}
+function renderCalendario(){
+  const hoy = new Date(new Date().toDateString());
+  const L = obligaciones().sort((a,b) => a.date - b.date);
+  $('todoList').innerHTML = L.filter(x => !x.done).slice(0,12).map(x => {
+    const dd = Math.ceil((x.date - hoy) / 864e5);
+    const estado = dd < 0 ? '<span style="color:var(--bad)">vencido</span>' : dd === 0 ? 'hoy' : `en ${dd} días`;
+    return `<div class="row"><div><b>${esc(x.title)}</b><div class="m">${fdate(x.date)} · ${estado}</div><div class="m">${esc(x.sub)}</div></div>
+      <button class="btn small" onclick="go('${x.go}')">Completar ahora</button></div>`;
+  }).join('') || '<div class="empty">No tienes pendientes. ¡Bien hecho!</div>';
+  if (!window.FullCalendar){ $('fcal').innerHTML = '<p class="help">El calendario visual necesita internet la primera vez. La lista de pendientes sigue funcionando.</p>'; return; }
+  if (fcal) fcal.destroy();
+  fcal = new FullCalendar.Calendar($('fcal'), {
+    initialView:'dayGridMonth', locale:'es', height:'auto',
+    headerToolbar:{left:'prev,next', center:'title', right:'today'},
+    events: L.map(x => ({title:x.title, start:x.date.toLocaleDateString('en-CA'), allDay:true,
+      color: x.done ? '#2f8f5b' : x.tipo==='F29' ? '#2f6b5a' : x.tipo==='Acuse' ? '#c9781c' : '#e5672f',
+      extendedProps:{go:x.go}})),
+    eventClick: info => { const g = info.event.extendedProps.go; if (g) go(g); }
+  });
+  fcal.render();
+}
+Object.assign(VIEWS, {fechas: () => { renderFechas(); renderCalendario(); }});
+
+
+/* ---------- 21. Asientos (partida doble), documentos PDF y libro diario ---------- */
+function asientosMes(ym){
+  const A = [];
+  db.movs.filter(m => m.date.startsWith(ym)).sort((a,b) => a.date.localeCompare(b.date)).forEach(m => {
+    const neto = Math.round(m.amount/(1+IVA)), iva = m.amount - neto;
+    const glosa = `${m.doc||''} ${m.num||''} ${m.desc||''}`.trim();
+    if (m.kind === 'venta'){
+      A.push({fecha:m.date, cuenta:'Caja / Clientes',     debe:m.amount, haber:0,   glosa});
+      A.push({fecha:m.date, cuenta:'Ventas',              debe:0,        haber:neto, glosa});
+      A.push({fecha:m.date, cuenta:'IVA débito fiscal',   debe:0,        haber:iva,  glosa});
+    } else {
+      A.push({fecha:m.date, cuenta:'Compras / Gastos',    debe:neto,     haber:0,   glosa});
+      A.push({fecha:m.date, cuenta:'IVA crédito fiscal',  debe:iva,      haber:0,   glosa});
+      A.push({fecha:m.date, cuenta:'Caja / Proveedores',  debe:0,        haber:m.amount, glosa});
+    }
+  });
+  return A;
+}
+function renderLibro(){
+  const box = $('libroDiario'); if (!box) return;
+  const ym = todayStr().slice(0,7);
+  const A = asientosMes(ym);
+  const td = A.reduce((a,x) => a + x.debe, 0), th = A.reduce((a,x) => a + x.haber, 0);
+  const cuadra = td === th;
+  box.innerHTML = A.length ? `
+    <div class="row"><div><b>Total Debe</b></div><div class="amt">${fmt(td)}</div></div>
+    <div class="row"><div><b>Total Haber</b></div><div class="amt">${fmt(th)}</div></div>
+    <div class="row"><div><b>Control</b><div class="m">${cuadra ? 'Debe y Haber cuadran.' : 'No cuadran. Revisa los movimientos.'}</div></div>
+      <span class="pill ${cuadra?'':'bad'}">${cuadra?'Cuadra':'Revisar'}</span></div>
+    <p class="help">Vista de ${A.length/3|0} movimientos del mes. El detalle completo está en el CSV de Documentos.</p>`
+    : '<div class="empty">Aún no hay movimientos este mes.</div>';
+}
+function exportLibroCSV(){
+  const ym = todayStr().slice(0,7);
+  const rows = [['Fecha','Cuenta','Debe','Haber','Glosa']];
+  asientosMes(ym).forEach(a => rows.push([a.fecha, a.cuenta, a.debe, a.haber, a.glosa]));
+  const csv = rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(';')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8'}));
+  a.download = `libro-diario-${ym}.csv`; a.click();
+  toast('Libro diario descargado.');
+}
+function pdfBase(title){
+  if (!window.jspdf){ toast('Este documento necesita internet la primera vez.'); return null; }
+  const doc = new window.jspdf.jsPDF({unit:'mm', format:'a4'});
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text(title, 15, 20);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.text(db.settings.name, 15, 27);
+  doc.setFontSize(9); doc.setTextColor(110); doc.text(`Generado el ${new Date().toLocaleDateString('es-CL')} · Documento de control interno`, 15, 33);
+  doc.setTextColor(0);
+  return doc;
+}
+function pdfLine(doc, y, izq, der, bold){
+  doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setFontSize(10);
+  doc.text(String(izq), 15, y);
+  doc.text(String(der), 195, y, {align:'right'});
+  return y + 7;
+}
+function pdfCotizacion(){
+  const d = window._q; if (!d){ toast('Primero haz una cotización en la pestaña Cotizar.'); return; }
+  const doc = pdfBase('Cotización'); if (!doc) return;
+  let y = 45;
+  y = pdfLine(doc, y, 'Fecha', $('qDate').value || todayStr());
+  y = pdfLine(doc, y, 'Producto', `${d.q} × ${d.p}`);
+  if (d.mods.length) y = pdfLine(doc, y, 'Adicionales', d.mods.join(', '));
+  y = pdfLine(doc, y, 'Precio unitario (IVA incluido)', fmt(d.unit));
+  y += 4;
+  y = pdfLine(doc, y, 'Neto', fmt(d.neto));
+  y = pdfLine(doc, y, 'IVA 19%', fmt(d.iva));
+  y = pdfLine(doc, y, 'Total con IVA', fmt(d.total), true);
+  doc.setFontSize(8); doc.setTextColor(110);
+  doc.text('Esta cotización no es boleta ni factura. Los documentos tributarios se emiten en el SII o en un sistema certificado.', 15, y + 10, {maxWidth:180});
+  doc.save(`cotizacion-${todayStr()}.pdf`);
+}
+function pdfF29(){
+  const c = f29Calc();
+  const doc = pdfBase(`Resumen F29 · período ${c.ym}`); if (!doc) return;
+  let y = 45;
+  y = pdfLine(doc, y, 'Ventas netas', fmt(c.vN));
+  y = pdfLine(doc, y, 'Cód. 503 · Facturas emitidas', c.fEm);
+  y = pdfLine(doc, y, 'Cód. 502 · IVA facturas emitidas', fmt(c.fIva));
+  y = pdfLine(doc, y, 'Cód. 519 · Facturas recibidas', c.cC);
+  y = pdfLine(doc, y, 'Cód. 520 · IVA crédito', fmt(c.cI));
+  y = pdfLine(doc, y, 'Cód. 504 · Remanente anterior', fmt(f29.remAnt||0));
+  y += 3;
+  y = pdfLine(doc, y, 'Cód. 89 · IVA determinado a pagar', fmt(c.c89));
+  y = pdfLine(doc, y, 'Cód. 77 · Remanente para el mes siguiente', fmt(c.c77));
+  y = pdfLine(doc, y, 'Cód. 62 · PPM', fmt(c.c62));
+  y = pdfLine(doc, y, 'Cód. 151 · Retención a honorarios', fmt(c.c151));
+  y = pdfLine(doc, y, 'Cód. 91 · Total a pagar', fmt(c.c91), true);
+  doc.setFontSize(8); doc.setTextColor(110);
+  doc.text('Para revisión con el contador. Confirma los valores en la pantalla del SII antes de declarar.', 15, y + 10, {maxWidth:180});
+  doc.save(`resumen-f29-${c.ym}.pdf`);
+}
+function pdfSercotec(){
+  const s = db.sercotec;
+  const doc = pdfBase('Planilla de rendición Sercotec'); if (!doc) return;
+  let y = 45;
+  const rend = s.gastos.reduce((a,g) => a + g.neto, 0);
+  y = pdfLine(doc, y, 'Presupuesto aprobado', fmt(s.presupuesto));
+  y = pdfLine(doc, y, 'Total rendido (neto)', fmt(rend));
+  y = pdfLine(doc, y, 'Saldo', fmt(s.presupuesto - rend), true);
+  y += 4;
+  doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  doc.text('Fecha', 15, y); doc.text('Categoría', 40, y); doc.text('Proveedor', 90, y); doc.text('N° doc.', 135, y); doc.text('Neto', 160, y); doc.text('Respaldo', 185, y, {align:'right'});
+  y += 6; doc.setFont('helvetica','normal');
+  s.gastos.forEach(g => {
+    if (y > 275){ doc.addPage(); y = 20; }
+    doc.text(g.date, 15, y); doc.text(String(g.cat).slice(0,24), 40, y); doc.text(String(g.prov||'').slice(0,22), 90, y);
+    doc.text(String(g.doc||'sin N°'), 135, y); doc.text(fmt(g.neto), 160, y); doc.text(g.resp ? 'Sí' : 'Falta', 185, y, {align:'right'});
+    y += 6;
+  });
+  if (!s.gastos.length){ doc.text('Sin gastos registrados.', 15, y); }
+  doc.setFontSize(8); doc.setTextColor(110);
+  doc.text('Los respaldos originales (facturas o boletas a nombre de la empresa) deben guardarse junto a esta planilla.', 15, y + 12, {maxWidth:180});
+  doc.save(`rendicion-sercotec-${todayStr()}.pdf`);
+}
+Object.assign(VIEWS, {mov: () => { renderMov(); fillItemSel(); drawIvaChart(); renderLibro(); }});
+
+
+/* ---------- 22. WhatsApp sin API (enlace wa.me, gratuito y oficial) ---------- */
+function quoteText(d){
+  return `Cotización ${db.settings.name}\n${$('qDate').value || todayStr()}\n${d.q} x ${d.p}` +
+    (d.mods.length ? `\nAdicionales: ${d.mods.join(', ')}` : '') +
+    `\nPrecio unitario: ${fmt(d.unit)} (IVA incluido)\nTotal: ${fmt(d.total)}\nNeto: ${fmt(d.neto)} · IVA: ${fmt(d.iva)}` +
+    `\n\nEsta cotización no es boleta ni factura.`;
+}
+function sendWA(){
+  const d = window._q; if (!d){ toast('Primero haz una cotización.'); return; }
+  const phone = ($('qPhone').value || '').replace(/\D/g,'');
+  const text = encodeURIComponent(quoteText(d));
+  const url = phone ? `https://wa.me/${phone}?text=${text}` : `https://wa.me/?text=${text}`;
+  window.open(url, '_blank', 'noopener');
+  toast(phone ? 'Se abrió WhatsApp con la cotización.' : 'Elige el contacto en WhatsApp y envía.');
+}
+
+
+/* ---------- 23. Clientes, proveedores, ofertas, competencia (módulos genéricos) ---------- */
+const SCHEMAS = {
+  clientes: {t:'Clientes', sing:'cliente', campos:[
+    ['nombre','Nombre','text'], ['telefono','Teléfono con código de país (ej: 56912345678)','tel'],
+    ['tags','Etiquetas (ej: empresa, colegio, boda)','text'],
+    ['consent','¿Autoriza recibir mensajes tuyos?','sel:no,sí'], ['notas','Notas','text']]},
+  proveedores: {t:'Proveedores', sing:'proveedor', campos:[
+    ['nombre','Nombre del proveedor','text'], ['local','Tienda o local','text'],
+    ['direccion','Dirección','text'], ['horario','Horario de atención','text'],
+    ['contacto','Teléfono o WhatsApp','tel'], ['envio','Envío: costo y tiempo','text'], ['notas','Notas','text']]},
+  ofertas: {t:'Opciones de compra por producto', sing:'opción de compra', campos:[
+    ['prodNombre','Producto (ej: MDF 3 mm plancha 60x90)','text'], ['provId','Proveedor o tienda','prov'],
+    ['precio','Precio con IVA','num'], ['envio','Costo de envío','num'],
+    ['plazo','Plazo de entrega','text'], ['fecha','Fecha del precio','date']]},
+  competencia: {t:'Precios de la competencia', sing:'precio', campos:[
+    ['tipo','Tipo de producto (ej: bandeja, llavero, letrero)','text'], ['producto','Producto','text'],
+    ['tienda','Competidor o tienda','text'], ['precio','Precio con IVA','num'],
+    ['fecha','Fecha en que lo verificaste','date'], ['url','Enlace de referencia (opcional)','text']]}
+};
+const byKey = (k, id) => db[k].find(x => x.id == id);
+function fieldInput(k, [name, label, type], val){
+  const v = val ?? '';
+  if (type.startsWith('sel:')){
+    const opts = type.slice(4).split(',');
+    return `<label>${label}</label><select id="f_${name}">${opts.map(o => `<option ${v===o?'selected':''}>${o}</option>`).join('')}</select>`;
+  }
+  if (type === 'prov'){
+    return `<label>${label}</label><select id="f_${name}"><option value="">Elige uno</option>${db.proveedores.map(p => `<option value="${p.id}" ${v==p.id?'selected':''}>${esc(p.nombre)}${p.local?' · '+esc(p.local):''}</option>`).join('')}</select>`;
+  }
+  const t = type === 'num' ? 'number' : type === 'date' ? 'date' : type === 'tel' ? 'tel' : 'text';
+  return `<label>${label}</label><input id="f_${name}" type="${t}" value="${esc(v)}" ${type==='num'?'inputmode="numeric" min="0"':''}>`;
+}
+function crudHTML(k, edit){
+  const S = SCHEMAS[k];
+  const val = edit ? byKey(k, edit) : {};
+  return `<div class="card" id="form-${k}"><h2>${edit ? 'Editar' : 'Agregar'} ${S.sing}</h2>
+    ${S.campos.map(c => fieldInput(k, c, val ? val[c[0]] : '')).join('')}
+    <div class="actions"><button class="btn" onclick="crudSave('${k}', ${edit ? edit : 'null'})">Guardar</button>
+    ${edit ? `<button class="btn ghost" onclick="renderCRUD('${k}')">Cancelar</button>` : ''}</div>
+    <div class="msg" id="msg-${k}"></div></div>`;
+}
+function renderCRUD(k, edit){
+  const box = $('crud-'+k); if (!box) return;
+  const S = SCHEMAS[k];
+  const rows = db[k].slice().reverse().map(r => {
+    let info = '';
+    if (k==='clientes') info = `${esc(r.telefono||'sin teléfono')} · ${esc(r.tags||'')}`;
+    if (k==='proveedores') info = `${esc(r.local||'')} · ${esc(r.horario||'horario no anotado')} · ${esc(r.envio||'')}`;
+    if (k==='ofertas'){ const p = byKey('proveedores', r.provId); info = `${fmt(r.precio)} + envío ${fmt(r.envio)} · ${esc(p?p.nombre:'sin proveedor')} · ${esc(r.plazo||'')}`; }
+    if (k==='competencia') info = `${fmt(r.precio)} · ${esc(r.tienda||'')} · verificado ${esc(r.fecha||'sin fecha')}`;
+    const titulo = k==='ofertas' ? esc(r.prodNombre) : k==='competencia' ? esc(r.producto) : esc(r.nombre);
+    const extra = k==='clientes' ? `<button class="btn small" ${r.consent==='sí'?'':'disabled'} onclick="clienteMsg(${r.id})">Mensaje</button>` : '';
+    return `<div class="row"><div><b>${titulo}</b><div class="m">${info}</div></div>
+      <div style="text-align:right;white-space:nowrap">${extra}
+      <button class="btn small ghost" onclick="renderCRUD('${k}',${r.id})">Editar</button>
+      <button class="btn danger" onclick="crudDel('${k}',${r.id})">Borrar</button></div></div>`;
+  }).join('') || `<div class="empty">Aún no tienes ${S.t.toLowerCase()}.</div>`;
+  box.innerHTML = `<div class="card"><h2>${S.t}</h2><p class="sub">${k==='clientes'?'Solo puedes enviar mensajes a quienes autorizaron recibirlos.':k==='ofertas'?'Anota cada alternativa de compra del mismo producto: precio, envío, tienda y plazo.':k==='competencia'?'Anota precios reales que verifiques. Cada uno lleva su fecha.':'Dónde compras, cómo llegar, horario y envíos.'}</p>${rows}</div>` + crudHTML(k, edit || null);
+}
+function crudSave(k, editId){
+  const S = SCHEMAS[k]; const rec = {};
+  let err = '';
+  S.campos.forEach(([name,label,type]) => {
+    const el = $('f_'+name); rec[name] = el ? el.value.trim() : '';
+    if (type==='num') rec[name] = Math.round(+rec[name] || 0);
+  });
+  const required = {clientes:'nombre', proveedores:'nombre', ofertas:'prodNombre', competencia:'producto'}[k];
+  if (!rec[required]) err = 'Falta completar: ' + S.campos.find(c => c[0]===required)[1] + '.';
+  if (!err && k==='ofertas' && !rec.provId) err = 'Elige el proveedor o tienda.';
+  if (!err && k==='ofertas' && !rec.precio) err = 'Escribe el precio.';
+  if (!err && k==='competencia' && !rec.precio) err = 'Escribe el precio.';
+  if (err){ $('msg-'+k).textContent = err; return; }
+  if (editId){ Object.assign(byKey(k, editId), rec); }
+  else db[k].push(Object.assign({id:uid()}, rec));
+  save(); toast('Guardado.'); renderCRUD(k); refreshMercado();
+}
+function crudDel(k, id){
+  if (!confirm('¿Borrar este registro?')) return;
+  db[k] = db[k].filter(x => x.id !== id); save(); renderCRUD(k); refreshMercado();
+}
+function clienteMsg(id){
+  const c = byKey('clientes', id); if (!c || c.consent !== 'sí'){ toast('Este cliente no ha autorizado mensajes.'); return; }
+  if (!c.telefono){ toast('Agrega su teléfono primero.'); return; }
+  const text = encodeURIComponent(`Hola ${c.nombre}, te escribimos de ${db.settings.name}. ¿Te puedo ayudar con alguna cotización?`);
+  window.open(`https://wa.me/${c.telefono.replace(/\D/g,'')}?text=${text}`, '_blank', 'noopener');
+  c.ultimoContacto = todayStr(); save();
+}
+function refreshMercado(){ renderMercado(); }
+
+/* ---------- 24. Mercado: resumen por tipo de producto y antigüedad de datos ---------- */
+function renderMercado(){
+  const box = $('mercadoResumen'); if (!box) return;
+  const hoy = new Date(new Date().toDateString());
+  const tipos = [...new Set(db.competencia.map(x => (x.tipo||'otro').toLowerCase()))];
+  const stats = tipos.map(t => {
+    const L = db.competencia.filter(x => (x.tipo||'otro').toLowerCase() === t);
+    const precios = L.map(x => +x.precio).filter(Boolean);
+    const fechas = L.map(x => x.fecha).filter(Boolean).sort();
+    const ultima = fechas[fechas.length-1];
+    const dias = ultima ? Math.ceil((hoy - new Date(ultima+'T00:00'))/864e5) : null;
+    return {t, n:L.length, min:Math.min(...precios), max:Math.max(...precios), avg:precios.reduce((a,b)=>a+b,0)/precios.length, dias};
+  });
+  box.innerHTML = `<div class="card"><h2>Mercado chileno · resumen</h2>
+    <p class="sub">Cada precio tiene su fecha. Cuando un dato tiene más de 30 días, conviene verificarlo de nuevo.</p>
+    ${stats.map(s => `<div class="row"><div><b>${esc(s.t)}</b><div class="m">${s.n} precios · mín ${fmt(s.min)} · prom ${fmt(s.avg)} · máx ${fmt(s.max)}</div></div>
+      <span class="pill ${s.dias!==null && s.dias>30 ? 'warn' : ''}">${s.dias===null ? 'sin fecha' : s.dias>30 ? 'actualizar' : 'al día'}</span></div>`).join('') || '<div class="empty">Aún no hay precios registrados. Agrega los que veas en tiendas y sitios de Chile.</div>'}
+    <div class="note-learn"><b>Nota:</b> la app no consulta precios sola. Tú los registras cuando los verificas, así siempre sabes de dónde vienen.</div></div>`;
+}
+
+/* ---------- 25. Rentabilidad y punto de equilibrio ---------- */
+function costoUnitario(prodId){
+  const c = db.costos[prodId] || {}; const b = db.costosBase;
+  const mat = +c.mat || 0, min = +c.min || 0, emp = +c.emp || 0;
+  return {mat, mano:min*b.moMin, energia:min*b.energiaMin, emp, total: mat + min*(b.moMin+b.energiaMin) + emp};
+}
+function renderRentabilidad(){
+  const box = $('rentBox'); if (!box) return;
+  const fijos = db.fijos.reduce((a,f) => a + (+f.monto||0), 0);
+  const filas = db.products.map(p => {
+    const c = costoUnitario(p.id);
+    const precioNeto = Math.round((p.tiers[0]||0) / (1+IVA));
+    const margen = precioNeto - c.total;
+    const pe = margen > 0 ? Math.ceil(fijos / margen) : null;
+    return {p, c, precioNeto, margen, pe};
+  });
+  box.innerHTML = `
+  <div class="card"><h2>Costos fijos del mes</h2>
+    <p class="sub">Son gastos que pagas aunque no vendas. Los de ejemplo son referenciales: reemplázalos por tus costos reales.</p>
+    ${db.fijos.map(f => `<div class="row"><div><b>${esc(f.nombre)}</b></div>
+      <div style="display:flex;gap:6px;align-items:center"><input type="number" min="0" inputmode="numeric" value="${f.monto}" style="width:120px" onchange="setFijo(${f.id}, this.value)"><button class="btn danger" onclick="delFijo(${f.id})">Borrar</button></div></div>`).join('')}
+    <div class="row" style="border:0"><b>Total fijo mensual</b><div class="amt">${fmt(fijos)}</div></div>
+    <label>Agregar gasto fijo</label><input id="fNom" placeholder="Ej: arriendo, seguro"><input id="fMonto" type="number" min="0" inputmode="numeric" placeholder="Monto mensual" style="margin-top:6px">
+    <div class="actions"><button class="btn small" onclick="addFijo()">Agregar</button></div>
+  </div>
+  <div class="card"><h2>Costos variables de tu taller</h2>
+    <p class="sub">Se usan para calcular el costo de cada producto.</p>
+    <label>Energía por minuto de máquina (CLP)</label><input type="number" step="0.1" value="${db.costosBase.energiaMin}" onchange="setBase('energiaMin', this.value)">
+    <label>Mano de obra por minuto (CLP)</label><input type="number" step="1" value="${db.costosBase.moMin}" onchange="setBase('moMin', this.value)">
+  </div>
+  <div class="card"><h2>Rentabilidad por producto</h2>
+    <p class="sub">Ingresa el costo del material y los minutos de máquina de cada producto.</p>
+    ${filas.map(({p,c,precioNeto,margen,pe}) => `<div class="card" style="box-shadow:none;margin:0 0 10px">
+      <b>${esc(p.name)}</b>
+      <div class="g3" style="margin-top:8px">
+        <div><label>Material ($)</label><input type="number" min="0" value="${(db.costos[p.id]||{}).mat||''}" onchange="setCosto(${p.id},'mat',this.value)"></div>
+        <div><label>Minutos máquina</label><input type="number" min="0" step="0.5" value="${(db.costos[p.id]||{}).min||''}" onchange="setCosto(${p.id},'min',this.value)"></div>
+        <div><label>Empaque ($)</label><input type="number" min="0" value="${(db.costos[p.id]||{}).emp||''}" onchange="setCosto(${p.id},'emp',this.value)"></div>
+      </div>
+      <div class="row"><div class="m">Costo total por unidad</div><div class="amt">${fmt(c.total)}</div></div>
+      <div class="row"><div class="m">Precio neto (1-10 unidades)</div><div class="amt">${fmt(precioNeto)}</div></div>
+      <div class="row"><div class="m">Margen por unidad</div><div class="amt" style="color:${margen>0?'var(--ok)':'var(--bad)'}">${fmt(margen)}</div></div>
+      <div class="row"><div><b>Punto de equilibrio</b><div class="m">Unidades que debes vender este mes para cubrir costos fijos</div></div>
+        <div class="amt">${pe===null ? 'Sin margen' : pe + ' u.'}</div></div>
+    </div>`).join('') || '<div class="empty">Agrega productos en Precios para ver su rentabilidad.</div>'}
+  </div>`;
+}
+function setFijo(id, v){ const f = db.fijos.find(x => x.id===id); if(f){ f.monto = Math.max(0, Math.round(+v||0)); save(); renderRentabilidad(); } }
+function delFijo(id){ db.fijos = db.fijos.filter(x => x.id!==id); save(); renderRentabilidad(); }
+function addFijo(){
+  const n = $('fNom').value.trim(), m = Math.round(+$('fMonto').value||0);
+  if (!n || !m){ toast('Escribe el nombre y el monto.'); return; }
+  db.fijos.push({id:uid(), nombre:n, monto:m}); save(); renderRentabilidad();
+}
+function setBase(k, v){ db.costosBase[k] = Math.max(0, +v||0); save(); renderRentabilidad(); }
+function setCosto(id, k, v){ db.costos[id] = db.costos[id] || {}; db.costos[id][k] = Math.max(0, +v||0); save(); renderRentabilidad(); }
+
+/* ---------- 26. Campañas: textos listos para redes sociales ---------- */
+const PLANTILLAS = {
+  Instagram: p => `✨ ${p}\n\nHecho a laser en Calama. Personalízalo con tu nombre o tu frase.\n\n📩 Escríbenos para cotizar.\n#TintaLaser #Calama #Personalizado #Regalos`,
+  Facebook:  p => `${p}, hecho a medida en Calama.\n\nCotiza hoy por mensaje. Entregas coordinadas.`,
+  WhatsApp:  p => `Hola 👋 Te comparto ${p} de Tinta Láser. ¿Te cotizo?`
+};
+function renderCampanas(){
+  const box = $('campBox'); if (!box) return;
+  const prods = db.products.map(p => p.name);
+  box.innerHTML = `
+  <div class="card"><h2>Nueva campaña</h2>
+    <p class="sub">Genera el texto y guárdalo. Luego lo publicas tú en la red que elijas.</p>
+    <label>Nombre de la campaña</label><input id="cNom" placeholder="Ej: Día de la madre">
+    <div class="g2"><div><label>Producto</label><select id="cProd">${prods.map(x => `<option>${esc(x)}</option>`).join('') || '<option>Agrega un producto primero</option>'}</select></div>
+    <div><label>Red social</label><select id="cRed"><option>Instagram</option><option>Facebook</option><option>WhatsApp</option></select></div></div>
+    <label>Fecha de publicación</label><input id="cFecha" type="date">
+    <div class="actions"><button class="btn" onclick="crearCampana()">Crear texto</button></div>
+    <div class="msg" id="cMsg"></div>
+  </div>
+  <div class="card"><h2>Mis campañas</h2>
+    ${(db.campanas||[]).slice().reverse().map(c => `<div class="row"><div><b>${esc(c.nombre)}</b><div class="m">${esc(c.red)} · ${esc(c.producto)} · ${c.fecha||'sin fecha'}</div>
+      <div class="m" style="white-space:pre-line;margin-top:6px">${esc(c.texto)}</div></div>
+      <div style="text-align:right"><button class="btn small" onclick="copiar(${c.id})">Copiar</button>
+      <button class="btn danger" onclick="delCampana(${c.id})">Borrar</button></div></div>`).join('') || '<div class="empty">Aún no tienes campañas.</div>'}
+  </div>
+  <div class="note-learn">La app no publica sola en redes sociales: cada red pide su propia autorización. Copia el texto y publícalo tú.</div>`;
+}
+function crearCampana(){
+  const nom = $('cNom').value.trim(), prod = $('cProd').value, red = $('cRed').value;
+  if (!nom){ $('cMsg').textContent = 'Escribe el nombre de la campaña.'; return; }
+  db.campanas = db.campanas || [];
+  db.campanas.push({id:uid(), nombre:nom, producto:prod, red, fecha:$('cFecha').value, texto:PLANTILLAS[red](prod)});
+  save(); toast('Campaña creada.'); renderCampanas();
+}
+function copiar(id){ const c = (db.campanas||[]).find(x => x.id===id); if (c) navigator.clipboard.writeText(c.texto).then(() => toast('Texto copiado.')); }
+function delCampana(id){ if(!confirm('¿Borrar la campaña?')) return; db.campanas = db.campanas.filter(x => x.id!==id); save(); renderCampanas(); }
+
+/* ---------- 27. Vistas ---------- */
+Object.assign(VIEWS, {
+  clientes: () => renderCRUD('clientes'),
+  proveedores: () => { renderCRUD('proveedores'); renderCRUD('ofertas'); },
+  competencia: () => { renderMercado(); renderCRUD('competencia'); },
+  rentabilidad: renderRentabilidad,
+  campanas: renderCampanas
+});
+
+/* ---------- 19. Recorrido guiado (Driver.js, MIT) ---------- */
+function startTour(){
+  const lib = window.driver && window.driver.js && window.driver.js.driver;
+  if (!lib){ toast('El recorrido necesita internet la primera vez. Intenta de nuevo con conexión.'); return; }
+  go('hoy');
+  db.tourSeen = true; save();
+  setTimeout(() => {
+    lib({
+      showProgress: true, allowClose: true, animate: true,
+      nextBtnText: 'Siguiente', prevBtnText: 'Anterior', doneBtnText: 'Listo',
+      progressText: 'Paso {{current}} de {{total}}',
+      steps: [
+        {element: '.hero', popover: {title: 'Tu próximo F29', description: 'Aquí ves cuántos días faltan para declarar el IVA. Se pone naranja cuando el plazo está cerca.'}},
+        {element: '.quick', popover: {title: 'Acciones rápidas', description: 'Cotizar, crear un pedido o registrar una venta en un toque.'}},
+        {element: '#checklist', popover: {title: 'Tu lista de inicio', description: 'Cada paso que completes se marca solo. Así sabes qué sigue.'}},
+        {element: '#tabs', popover: {title: 'Navegación', description: 'Las pestañas de abajo te llevan a cada parte. En "Más" están el F29, los trámites, el inventario y Sercotec.'}}
+      ]
+    }).drive();
+  }, 250);
+}
+/* Primera vez: el recorrido se ofrece al terminar el asistente */
+const _wizFinish = () => { if (!db.tourSeen) setTimeout(startTour, 700); };
+function renderView(id){ if (VIEWS[id]) VIEWS[id](); }
+function refreshAll(){
+  const active = document.querySelector('section.on')?.id || 'hoy';
+  renderView(active);
+  renderHoy();
+}
+function init(){
+  $('qDate').value = todayStr();
+  $('mDate').value = todayStr();
+  $('gDate').value = todayStr();
+  renderAjustes();
+  renderHoy();
+  if (!db.setup) openWizard();
+}
+applyMode();
+init();
+</script>
+</body>
+</html>

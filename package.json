@@ -1,0 +1,28 @@
+{
+  "name": "tinta-laser-gestion",
+  "productName": "Tinta Láser · Gestión",
+  "version": "1.0.0",
+  "description": "Gestión personal de Tinta Láser: cotizaciones, F29, documentos y trámites.",
+  "author": "Tinta Láser",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "cl.tintalaser.gestion",
+    "directories": {"output": "dist"},
+    "files": ["main.js", "web/**/*"],
+    "win": {"target": "nsis"},
+    "mac": {"target": "dmg"},
+    "linux": {"target": "AppImage"}
+  }
+}
